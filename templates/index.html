@@ -4,102 +4,398 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amazon Product Description Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Updated marked.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-8">Amazon Product Description Generator</h1>
-        
-        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">Upload Image</h2>
-                <form id="uploadForm" class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium">Choose File:</label>
-                        <input type="file" id="imageFile" name="image_file" accept="image/*,video/*" 
-                               class="w-full p-2 border rounded">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium">Or Enter Image URL:</label>
-                        <input type="text" id="imageUrl" name="image_url" 
-                               class="w-full p-2 border rounded">
-                    </div>
-                    <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
-                        Generate Description
-                    </button>
-                </form>
-            </div>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <style>
+        :root {
+            --amazon-orange: #FF9900;
+            --amazon-dark: #131921;
+            --amazon-light: #232F3E;
+            --amazon-yellow: #FEBD69;
+            --amazon-blue: #232F3E;
+        }
 
-            <div id="loading" class="hidden">
-                <div class="flex justify-center items-center">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #EAEDED;
+            color: #0F1111;
+        }
+
+        .amazon-button {
+            background: linear-gradient(to bottom, #f7dfa5, #f0c14b);
+            border-color: #a88734 #9c7e31 #846a29;
+            border-radius: 3px;
+            border-style: solid;
+            border-width: 1px;
+            color: #111;
+            cursor: pointer;
+            padding: 8px 16px;
+            box-shadow: 0 1px 0 rgba(255,255,255,.4) inset;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .amazon-button:hover {
+            background: linear-gradient(to bottom, #f5d78e, #eeb933);
+        }
+
+        .amazon-header {
+            background-color: var(--amazon-dark);
+            color: white;
+        }
+
+        .amazon-nav {
+            background-color: var(--amazon-light);
+            color: white;
+        }
+
+        .product-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #f8f8f8;
+        }
+
+        .drop-zone.dragover {
+            border-color: var(--amazon-orange);
+            background: #fff;
+        }
+
+        .preview-container {
+            aspect-ratio: 1;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .preview-container img,
+        .preview-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Markdown Styles */
+        .markdown-content {
+            line-height: 1.6;
+        }
+
+        .markdown-content h1 {
+            font-size: 1.75rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.875rem 0;
+        }
+
+        .markdown-content p {
+            margin: 0.75rem 0;
+        }
+
+        .markdown-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+        }
+
+        .markdown-content ol {
+            list-style-type: decimal;
+            margin-left: 1.5rem;
+        }
+
+        /* Loading Skeleton */
+        .skeleton {
+            animation: skeleton-loading 1s linear infinite alternate;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-color: #f0f0f0;
+            }
+            100% {
+                background-color: #e0e0e0;
+            }
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #f0f0f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--amazon-orange);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="amazon-header p-4">
+            <div class="container mx-auto flex items-center justify-between">
+                <h1 class="text-2xl font-bold">
+                    <img src="/api/placeholder/120/40" alt="Amazon Logo" class="h-8">
+                </h1>
+                <div class="text-sm">Product Description Generator</div>
+            </div>
+        </div>
+        <nav class="amazon-nav p-2">
+            <div class="container mx-auto">
+                <div class="text-sm">Home > Tools > Description Generator</div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column -->
+            <div class="space-y-6">
+                <div class="product-container p-6">
+                    <h2 class="text-xl font-bold mb-4">Upload Media</h2>
+                    <form id="uploadForm">
+                        <div class="drop-zone mb-4" id="dropZone">
+                            <div class="text-center">
+                                <div class="text-gray-500 mb-2">
+                                    Drag and drop your image/video here or
+                                </div>
+                                <label class="amazon-button cursor-pointer">
+                                    <input type="file" id="fileInput" class="hidden" accept="image/*,video/*">
+                                    Choose File
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Or enter image URL:</label>
+                            <input type="url" id="urlInput" class="w-full p-2 border rounded" 
+                                   placeholder="https://example.com/image.jpg">
+                        </div>
+
+                        <div class="text-sm text-gray-500 mb-4">
+                            <ul class="list-disc ml-5">
+                                <li>Maximum file size: 16MB</li>
+                                <li>Supported formats: PNG, JPG, JPEG, GIF, WEBP, MP4, MOV, AVI, WEBM</li>
+                                <li>Recommended image resolution: 1920x1080 or lower</li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="amazon-button w-full">
+                            Generate Description
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="product-container p-6">
+                    <h2 class="text-xl font-bold mb-4">Preview</h2>
+                    <div class="preview-container">
+                        <div id="previewPlaceholder" class="skeleton w-full h-full"></div>
+                        <img id="imagePreview" class="hidden" alt="Product preview">
+                        <video id="videoPreview" class="hidden" controls></video>
+                    </div>
                 </div>
             </div>
 
-            <div id="result" class="hidden">
-                <h2 class="text-xl font-semibold mb-4">Generated Description</h2>
-                <div id="description" class="prose max-w-none"></div>
-            </div>
-
-            <div id="error" class="hidden">
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                    <p id="errorMessage"></p>
+            <!-- Right Column -->
+            <div class="product-container p-6">
+                <h2 class="text-xl font-bold mb-4">Generated Description</h2>
+                <div id="progressContainer" class="hidden mb-4">
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="text-sm text-center mt-2">Generating description...</div>
+                </div>
+                <div id="descriptionContainer">
+                    <div id="descriptionPlaceholder" class="hidden">
+                        <div class="skeleton h-4 w-3/4 mb-2"></div>
+                        <div class="skeleton h-4 w-full mb-2"></div>
+                        <div class="skeleton h-4 w-5/6 mb-2"></div>
+                    </div>
+                    <div id="descriptionContent" class="markdown-content"></div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        // Initialize marked for Markdown parsing
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const urlInput = document.getElementById('urlInput');
+        const dropZone = document.getElementById('dropZone');
+        const imagePreview = document.getElementById('imagePreview');
+        const videoPreview = document.getElementById('videoPreview');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const descriptionPlaceholder = document.getElementById('descriptionPlaceholder');
+        const descriptionContent = document.getElementById('descriptionContent');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.querySelector('.progress-bar-fill');
+
+        // Drag and drop handling
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                fileInput.files = files;
+                updatePreview(files[0]);
+                urlInput.value = '';
+            }
+        }
+
+        function updatePreview(file) {
+            if (file.size > 16 * 1024 * 1024) {
+                showError('File size exceeds 16MB limit');
+                fileInput.value = '';
+                return;
+            }
+
+            previewPlaceholder.classList.add('hidden');
+            imagePreview.classList.add('hidden');
+            videoPreview.classList.add('hidden');
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type.startsWith('video/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    videoPreview.src = e.target.result;
+                    videoPreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showError(message) {
+            descriptionContent.innerHTML = `<div class="text-red-500">${message}</div>`;
+        }
+
+        function updateProgress(progress) {
+            progressBar.style.width = `${progress}%`;
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                updatePreview(e.target.files[0]);
+                urlInput.value = '';
+            }
+        });
+
+        urlInput.addEventListener('input', () => {
+            if (urlInput.value) {
+                fileInput.value = '';
+                previewPlaceholder.classList.add('hidden');
+                videoPreview.classList.add('hidden');
+                imagePreview.src = urlInput.value;
+                imagePreview.classList.remove('hidden');
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const loading = document.getElementById('loading');
-            const result = document.getElementById('result');
-            const error = document.getElementById('error');
-            const description = document.getElementById('description');
-            
-            loading.classList.remove('hidden');
-            result.classList.add('hidden');
-            error.classList.add('hidden');
+            progressContainer.classList.remove('hidden');
+            descriptionPlaceholder.classList.remove('hidden');
+            descriptionContent.innerHTML = '';
+            updateProgress(0);
 
             const formData = new FormData();
-            const imageFile = document.getElementById('imageFile').files[0];
-            const imageUrl = document.getElementById('imageUrl').value;
-
-            if (imageFile) {
-                formData.append('image_file', imageFile);
-            } else if (imageUrl) {
-                formData.append('image_url', imageUrl);
+            
+            if (fileInput.files[0]) {
+                formData.append('image_file', fileInput.files[0]);
+            } else if (urlInput.value) {
+                formData.append('image_url', urlInput.value);
             } else {
-                error.classList.remove('hidden');
-                document.getElementById('errorMessage').textContent = 'Please provide an image file or URL';
-                loading.classList.add('hidden');
+                showError('Please provide an image file or URL');
                 return;
             }
 
             try {
+                updateProgress(30);
                 const response = await fetch('/generate', {
                     method: 'POST',
                     body: formData
                 });
 
+                updateProgress(70);
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Updated to use marked.parse() instead of marked()
-                    description.innerHTML = marked.parse(data.description);
-                    result.classList.remove('hidden');
+                    descriptionPlaceholder.classList.add('hidden');
+                    descriptionContent.innerHTML = marked.parse(data.description || '');
                 } else {
-                    throw new Error(data.error || 'Failed to generate description');
+                    showError(data.error || 'An error occurred');
                 }
-            } catch (err) {
-                error.classList.remove('hidden');
-                document.getElementById('errorMessage').textContent = err.message;
+                updateProgress(100);
+            } catch (error) {
+                showError('Failed to generate description');
             } finally {
-                loading.classList.add('hidden');
+                setTimeout(() => {
+                    progressContainer.classList.add('hidden');
+                }, 1000);
             }
         });
     </script>
