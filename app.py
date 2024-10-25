@@ -38,22 +38,67 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 API_URL = "https://process-image-f6be3exkra-uc.a.run.app"
 
 
+def download_file(url, save_path):
+    """Downloads a file from a URL and saves it to the specified path."""
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        
+        with open(save_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        return save_path
+    except Exception as e:
+        app.logger.error(f"Failed to download file from {url}: {str(e)}")
+        return None
+
 def get_instagram_video_info(instagram_url):
     try:
         api_url = "https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/get-info-rapidapi"
         headers = {
-            "x-rapidapi-key": "ff814a8f8cmsh0aa30af17e3e1cdp1ed0f2jsnbd8e56c092ca",#os.getenv("RAPIDAPI_KEY"),  # Securely store your API key
+            "x-rapidapi-key": "ff814a8f8cmsh0aa30af17e3e1cdp1ed0f2jsnbd8e56c092ca",  # Securely store your API key
             "x-rapidapi-host": "instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com"
         }
         querystring = {"url": instagram_url}
         response = requests.get(api_url, headers=headers, params=querystring)
         response.raise_for_status()
-        return response.json()
 
-    except requests.RequestException as e:
-        app.logger.error(f"Instagram API request error: {str(e)}")
-        return {"error": "Failed to fetch Instagram video info"}
+        # Parse JSON response
+        data = response.json()
+        
+        # Download thumbnail
+        thumb_url = data.get('thumb')
+        video_url = data.get('download_url')
+        if thumb_url and video_url:
+            # Create a directory to save downloaded files
+            os.makedirs(app.config['DOWNLOAD_FOLDER'], exist_ok=True)
 
+            thumb_path = os.path.join(app.config['DOWNLOAD_FOLDER'], f"{data['shortcode']}_thumb.jpg")
+            video_path = os.path.join(app.config['DOWNLOAD_FOLDER'], f"{data['shortcode']}_video.mp4")
+
+            # Download and save the thumbnail
+            downloaded_thumb = download_file(thumb_url, thumb_path)
+            # Download and save the video
+            downloaded_video = download_file(video_url, video_path)
+
+            if downloaded_thumb and downloaded_video:
+                app.logger.info(f"Successfully downloaded thumbnail to {downloaded_thumb} and video to {downloaded_video}.")
+                return {
+                    'caption': data.get('caption'),
+                    'thumb_path': downloaded_thumb,
+                    'video_path': downloaded_video,
+                    'error': False,
+                    'hosting': 'instagram',
+                    'shortcode': data['shortcode']
+                }
+
+        app.logger.warning("Thumbnail or video URL not found in the response.")
+        return {'error': 'Thumbnail or video URL not found'}
+
+    except Exception as e:
+        app.logger.error(f"Error in get_instagram_video_info: {str(e)}")
+        return {'error': 'An unexpected error occurred'}
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
@@ -135,18 +180,25 @@ def generate_description():
     try:
         app.logger.info("Received a request to generate a description.")
         
-        # Check for Instagram video URL
-        if 'image_url' in request.form:
-            instagram_url = request.form['image_url']
+        if 'video_url' in request.form:
+            instagram_url = request.form['video_url']
             app.logger.info(f"Received Instagram video URL: {instagram_url}")
 
-            if not instagram_url:
-                app.logger.warning("No URL provided for Instagram video.")
-                return jsonify({'error': 'No URL provided'}), 400
-
             result = get_instagram_video_info(instagram_url)
-            app.logger.info("Successfully retrieved Instagram video info.")
-            return jsonify(result)
+            if result.get('error'):
+                return jsonify(result)
+
+            # Now use the downloaded video and thumbnail paths for further processing
+            thumb_path = result['thumb_path']
+            video_path = result['video_path']
+            
+            # Process the video or thumbnail
+            # Example:
+            video_result = process_image(image_path=video_path)
+            #thumb_result = process_image(image_path=thumb_path)
+
+            return jsonify({video_result})
+
         
         # Process file uploads if video_url is not provided
         if 'image_file' in request.files:
