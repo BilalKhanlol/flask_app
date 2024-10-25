@@ -1,92 +1,106 @@
+templates/index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FLUX.1 Image Generator</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:disabled {
-            background-color: #cccccc;
-        }
-        #result {
-            margin-top: 20px;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-        .loading {
-            display: none;
-            margin-top: 10px;
-        }
-    </style>
+    <title>Amazon Product Description Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body>
-    <h1>FLUX.1 Image Generator</h1>
-    <form action="/generate" method="post">
-        <div class="form-group">
-            <label for="prompt">Prompt:</label>
-            <input type="text" id="prompt" name="prompt" required>
-        </div>
-        <div class="form-group">
-            <label for="seed">Seed:</label>
-            <input type="number" id="seed" name="seed" value="0">
-        </div>
-        <div class="form-group">
-            <label>
-                <input type="checkbox" id="randomize_seed" name="randomize_seed" checked>
-                Randomize seed
-            </label>
-        </div>
-        <div class="form-group">
-            <label for="width">Width:</label>
-            <input type="number" id="width" name="width" value="512" min="64" max="2048">
-        </div>
-        <div class="form-group">
-            <label for="height">Height:</label>
-            <input type="number" id="height" name="height" value="512" min="64" max="2048">
-        </div>
-        <div class="form-group">
-            <label for="num_inference_steps">Number of inference steps:</label>
-            <input type="number" id="num_inference_steps" name="num_inference_steps" value="10" min="1" max="50">
-        </div>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Amazon Product Description Generator</h1>
         
-        <button type="submit">Generate Image</button>
-    </form>
-    
-    <div class="loading" id="loading">Generating image...</div>
-    <div id="result"></div>
-    <div id="error" class="error"></div>
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4">Upload Image/Video</h2>
+                <form id="uploadForm" class="space-y-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium">Choose File:</label>
+                        <input type="file" id="imageFile" name="image_file" accept="image/*,video/*" 
+                               class="w-full p-2 border rounded">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium">Or Enter Image/Video URL:</label>
+                        <input type="text" id="imageUrl" name="image_url" 
+                               class="w-full p-2 border rounded">
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
+                        Generate Description
+                    </button>
+                </form>
+            </div>
 
-    {% if image_data %}
-        <h2>Generated Image:</h2>
-        <img src="data:image/webp;base64,{{ image_data }}" alt="Generated Image" style="max-width: 100%;">
-    {% endif %}
+            <div id="loading" class="hidden">
+                <div class="flex justify-center items-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            </div>
+
+            <div id="result" class="hidden">
+                <h2 class="text-xl font-semibold mb-4">Generated Description</h2>
+                <div id="description" class="prose max-w-none"></div>
+            </div>
+
+            <div id="error" class="hidden">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    <p id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+            const description = document.getElementById('description');
+            
+            loading.classList.remove('hidden');
+            result.classList.add('hidden');
+            error.classList.add('hidden');
+
+            const formData = new FormData();
+            const imageFile = document.getElementById('imageFile').files[0];
+            const imageUrl = document.getElementById('imageUrl').value;
+
+            if (imageFile) {
+                formData.append('image_file', imageFile);
+            } else if (imageUrl) {
+                formData.append('image_url', imageUrl);
+            } else {
+                error.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = 'Please provide an image file or URL';
+                loading.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    description.innerHTML = marked(data.description);
+                    result.classList.remove('hidden');
+                } else {
+                    throw new Error(data.error || 'Failed to generate description');
+                }
+            } catch (err) {
+                error.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = err.message;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
