@@ -45,12 +45,12 @@ def generate_image():
         # Generate image using the API
         result = client.predict(
             prompt,  # The prompt as a single argument
-            seed=seed,
-            randomize_seed=randomize_seed,
-            width=width,
-            height=height,
-            num_inference_steps=num_inference_steps,
-            api_name="/infer"
+            seed,
+            randomize_seed,
+            width,
+            height,
+            num_inference_steps,
+            "/infer"
         )
 
         # The result[0] contains the image path
