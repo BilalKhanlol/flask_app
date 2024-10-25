@@ -20,7 +20,7 @@ def generate_image():
     try:
         # Get parameters from request
         data = request.json
-        prompt = data.get('prompt')
+        prompt = data.get('prompt', '')
         seed = float(data.get('seed', 0))
         randomize_seed = data.get('randomize_seed', True)
         width = float(data.get('width', 1024))
@@ -28,18 +28,16 @@ def generate_image():
         num_inference_steps = float(data.get('num_inference_steps', 4))
 
         # Generate image using the API
-        result = client.predict(
-            prompt=prompt,
-            seed=seed,
-            randomize_seed=randomize_seed,
-            width=width,
-            height=height,
-            num_inference_steps=num_inference_steps,
-            api_name="/infer"
-        )
+        result = client.predict({
+            "prompt": prompt,
+            "seed": seed,
+            "randomize_seed": randomize_seed,
+            "width": width,
+            "height": height,
+            "num_inference_steps": num_inference_steps
+        }, api_name="/infer")
 
         # The result[0] contains the image path
-        # Copy the image to our temp directory with a unique name
         image_path = result[0]
         new_seed = result[1]
         
@@ -54,6 +52,7 @@ def generate_image():
             'status': 'error',
             'message': str(e)
         }), 500
+
 
 @app.route('/images/<path:filename>')
 def serve_image(filename):
