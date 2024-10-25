@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file ,send_from_directory
 import requests
 import os
 from werkzeug.utils import secure_filename
@@ -17,6 +17,7 @@ app.config.update(
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max file size
     UPLOAD_FOLDER='temp_uploads',
     DOWNLOAD_FOLDER='downloads',
+    TEMP_VIDEO_DIR='tmp',
     REQUEST_TIMEOUT=300,  # 5 minutes timeout
     ALLOWED_IMAGE_EXTENSIONS={'png', 'jpg', 'jpeg', 'gif', 'webp'},
     ALLOWED_VIDEO_EXTENSIONS={'mp4', 'mov', 'avi', 'webm'},
@@ -246,7 +247,7 @@ def process_video(video_path):
         # Structure the output as specified
         return {
             "description": result,
-            "media_url": video_path,
+            "media_url": f"/videos/{os.path.basename(video_path)}",
             "media_type": "video"
         }
 
@@ -326,7 +327,7 @@ def process_image(image_path=None, image_url=None):
         # Structure the output as specified
         return {
             "description": result,
-            "media_url": image_url if image_url else image_path,
+            "media_url": image_url if image_url else f"/images/{os.path.basename(image_path)}",
             "media_type": "image"
         }
 
@@ -338,6 +339,11 @@ def process_image(image_path=None, image_url=None):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# New route to serve the video file
+@app.route('/video/<filename>')
+def get_video(filename):
+    return send_from_directory(TEMP_VIDEO_DIR, filename)
 
 @app.route('/generate', methods=['POST'])
 def generate_description():
