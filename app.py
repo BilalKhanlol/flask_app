@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_from_directory
 import requests
 import os
 
@@ -6,6 +6,10 @@ app = Flask(__name__)
 
 # Endpoint of the external API
 API_URL = "https://infer-f6be3exkra-uc.a.run.app/"
+
+# Directory to save generated images
+IMAGE_DIR = os.path.join(app.static_folder, 'images')
+os.makedirs(IMAGE_DIR, exist_ok=True)
 
 @app.route('/')
 def index():
@@ -32,8 +36,6 @@ def generate_image():
 
     # Make the POST request to the external API
     response = requests.post(API_URL, json=payload)
-    # Make the POST request to the external API
-    response = requests.post(API_URL, json=payload)
 
     # Check if the response is OK
     if response.status_code == 200:
@@ -47,7 +49,7 @@ def generate_image():
 
     return "Error generating image", 500
 
-@app.route('/static/<path:filename>')
+@app.route('/static/images/<path:filename>')
 def static_files(filename):
     return send_from_directory(IMAGE_DIR, filename)
 
