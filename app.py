@@ -104,7 +104,11 @@ def get_instagram_video_info(instagram_url):
 
         # Stream video to temporary file
         temp_video_path = stream_url_to_file(video_url)
+
+        app.logger.info(f"temp video pathI: {temp_video_path}")
+
         if not temp_video_path:
+            app.logger.info(f"temp video path not displayed: {temp_video_path}")
             return {'error': 'Failed to download video'}
 
         return {
@@ -255,6 +259,10 @@ def generate_description():
                 result = get_instagram_video_info(url)
                 if result.get('error'):
                     return jsonify({'error': result['error']}), 400
+
+                                # Log the entire result for debugging
+                                    # Log the entire result for debugging
+                    app.logger.info(f"Instagram API result: {result}")
 
                 # Ensure 'video_path' exists in the result before accessing it
                 if 'video_path' not in result:
