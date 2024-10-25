@@ -283,9 +283,9 @@ def generate_description():
                 
                 # Process the video
                 video_result = process_video(result['video_path'])
-                if os.path.exists(video_path):
-                    app.logger.info(f"Cleaning up temporary file: {video_path}")
-                    os.unlink(video_path)
+                if os.path.exists(result['video_path']):
+                    app.logger.info(f"Cleaning up temporary file: {result['video_path']}")
+                    os.unlink(result['video_path'])
                 return jsonify(video_result)
             
             # Handle regular image URL
