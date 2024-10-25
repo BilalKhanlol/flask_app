@@ -74,7 +74,6 @@ def stream_url_to_file(url, chunk_size=8192):
         if os.path.exists(temp_file.name):
             os.unlink(temp_file.name)
         return None
-
 def get_instagram_video_info(instagram_url):
     """Get video information and download from Instagram URL."""
     try:
@@ -92,6 +91,9 @@ def get_instagram_video_info(instagram_url):
         response = requests.get(api_url, headers=headers, params=querystring, timeout=30)
         response.raise_for_status()
         data = response.json()
+
+        # Log the data received from the API
+        app.logger.info(f"Data received from API: {data}")
 
         if 'error' in data:
             return {'error': data['error']}
@@ -119,6 +121,7 @@ def get_instagram_video_info(instagram_url):
     except Exception as e:
         app.logger.error(f"Error in get_instagram_video_info: {str(e)}")
         return {'error': 'An unexpected error occurred'}
+
 
 def process_video(video_path):
     """Process video file and stream it to the API."""
@@ -252,6 +255,10 @@ def generate_description():
                 result = get_instagram_video_info(url)
                 if result.get('error'):
                     return jsonify({'error': result['error']}), 400
+
+                # Ensure 'video_path' exists in the result before accessing it
+                if 'video_path' not in result:
+                    return jsonify({'error': 'Video path not found in result'}), 400
                 
                 # Process the video
                 video_result = process_video(result['video_path'])
