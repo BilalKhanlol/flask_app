@@ -1,7 +1,18 @@
 import os
+import logging
 from flask import Flask, render_template, request, jsonify, send_file
 from gradio_client import Client
 import tempfile
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    handlers=[
+        logging.FileHandler("app.log"),  # Log to a file
+        logging.StreamHandler()  # Also log to the console
+    ]
+)
 
 app = Flask(__name__)
 
@@ -14,6 +25,7 @@ TEMP_DIR = tempfile.mkdtemp()
 @app.route('/')
 def home():
     return render_template('index.html')
+
 @app.route('/generate', methods=['POST'])
 def generate_image():
     try:
@@ -26,12 +38,13 @@ def generate_image():
         height = float(data.get('height', 1024))
         num_inference_steps = float(data.get('num_inference_steps', 4))
 
-        print("data :"+data)
-        print("prompt :"+prompt)
+        # Log received data
+        logging.debug(f"Received data: {data}")
+        logging.debug(f"Prompt: {prompt}")
 
         # Generate image using the API
         result = client.predict(
-            prompt,  # The prompt might need to be in a list or tuple
+            prompt,  # The prompt as a single argument
             seed=seed,
             randomize_seed=randomize_seed,
             width=width,
@@ -51,11 +64,12 @@ def generate_image():
         })
 
     except Exception as e:
+        logging.error(f"Error occurred: {str(e)}")  # Log the error
         return jsonify({
             'status': 'error',
-            'message': str(e)
+            'message': 'An error occurred while generating the image.',
+            'details': str(e)  # Include error details if necessary
         }), 500
-
 
 @app.route('/images/<path:filename>')
 def serve_image(filename):
