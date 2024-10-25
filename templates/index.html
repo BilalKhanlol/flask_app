@@ -84,9 +84,9 @@
     <div id="result"></div>
     <div id="error" class="error"></div>
 
-    {% if image_path %}
+    {% if image_data %}
         <h2>Generated Image:</h2>
-        <img src="{{ image_path }}" alt="Generated Image" style="max-width: 100%;">
+        <img src="data:image/webp;base64,{{ image_data }}" alt="Generated Image" style="max-width: 100%;">
     {% endif %}
 </body>
 </html>

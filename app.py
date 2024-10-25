@@ -1,15 +1,12 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request
 import requests
 import os
+import base64
 
 app = Flask(__name__)
 
 # Endpoint of the external API
 API_URL = "https://infer-f6be3exkra-uc.a.run.app/"
-
-# Directory to save generated images
-IMAGE_DIR = os.path.join(app.static_folder, 'images')
-os.makedirs(IMAGE_DIR, exist_ok=True)
 
 @app.route('/')
 def index():
@@ -39,19 +36,11 @@ def generate_image():
 
     # Check if the response is OK
     if response.status_code == 200:
-        # Save the image to a file
-        output_file = os.path.join(IMAGE_DIR, 'output_image.webp')
-        with open(output_file, 'wb') as f:
-            f.write(response.content)
-
-        # Return the image path for displaying in the HTML
-        return render_template('index.html', image_path='images/output_image.webp')
+        # Convert the image to base64
+        base64_image = base64.b64encode(response.content).decode('utf-8')
+        return render_template('index.html', image_data=base64_image)
 
     return "Error generating image", 500
-
-@app.route('/static/images/<path:filename>')
-def static_files(filename):
-    return send_from_directory(IMAGE_DIR, filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))  # Use PORT env variable for Render
