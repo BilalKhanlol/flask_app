@@ -49,10 +49,7 @@ def generate_image():
             randomize_seed,
             width,
             height,
-            num_inference_steps,
-            "/infer"
-        )
-
+            num_inference_steps)
         # The result[0] contains the image path
         image_path = result[0]
         new_seed = result[1]
