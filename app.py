@@ -22,7 +22,7 @@ logging.basicConfig(
 app = Flask(__name__)
 
 # Initialize Gradio client
-client = Client("black-forest-labs/FLUX.1-schnell", api_key=API_KEY)
+client = Client("black-forest-labs/FLUX.1-schnell", hf_token=API_KEY)
 
 
 # Create a temporary directory to store generated images
