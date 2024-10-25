@@ -56,6 +56,7 @@ def extract_instagram_shortcode(url):
 def stream_url_to_file(url, chunk_size=8192):
     """Stream a URL to a temporary file and return the file object."""
     try:
+        app.logger.warning(f"func : stream_url_to_file , Video URL  {url}.")
         # Create a temporary file
         temp_file = tempfile.NamedTemporaryFile(delete=False)
         
@@ -74,6 +75,7 @@ def stream_url_to_file(url, chunk_size=8192):
         if os.path.exists(temp_file.name):
             os.unlink(temp_file.name)
         return None
+
 def get_instagram_video_info(instagram_url):
     """Get video information and download from Instagram URL."""
     try:
@@ -87,35 +89,35 @@ def get_instagram_video_info(instagram_url):
             "x-rapidapi-host": "instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com"
         }
         querystring = {"url": instagram_url}
-        
+
         response = requests.get(api_url, headers=headers, params=querystring, timeout=30)
         response.raise_for_status()
         data = response.json()
 
         # Log the data received from the API
-        app.logger.info(f"Download Data received from API: {data.download_url}")
+        app.logger.info(f"Data received from API: {data}")
 
-        if 'error' in data:
+        if data.get('error'):
+            app.logger.warning(f"API returned an error: {data['error']}")
             return {'error': data['error']}
 
-        video_url = data.download_url
+        # Correctly extract the download_url from the response
+        video_url = data.get('download_url')
         if not video_url:
+            app.logger.warning("Video URL not found in API response.")
             return {'error': 'Video URL not found'}
 
         # Stream video to temporary file
         temp_video_path = stream_url_to_file(video_url)
-
-        app.logger.info(f"temp video pathI: {temp_video_path}")
-
         if not temp_video_path:
-            app.logger.info(f"temp video path not displayed: {temp_video_path}")
             return {'error': 'Failed to download video'}
 
         return {
             'video_path': temp_video_path,
             'error': False,
-            'hosting': 'instagram',
-            'shortcode': shortcode,
+            'hosting': data['hosting'],  # Store hosting from the response
+            'shortcode': data['shortcode'],  # Store shortcode from the response
+            'caption': data.get('caption', ''),  # Optional: Store caption if needed
             'mime_type': 'video/mp4'  # Instagram videos are typically MP4
         }
 
