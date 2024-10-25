@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = 'temp_uploads'
+app.config['REQUEST_TIMEOUT'] = 300  # 5 minutes timeout
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -13,23 +14,32 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 API_URL = "https://process-image-f6be3exkra-uc.a.run.app"
 
 def process_image(image_path=None, image_url=None):
-    if image_path:
-        with open(image_path, 'rb') as img:
-            files = {
-                'image_file': img
-            }
-            data = {
+    try:
+        if image_path:
+            with open(image_path, 'rb') as img:
+                files = {
+                    'image_file': img
+                }
+                data = {
+                    'text_input': 'Write a Amazon Product Description from the Product Image'
+                }
+                response = requests.post(API_URL, files=files, data=data, timeout=app.config['REQUEST_TIMEOUT'])
+        else:
+            json_data = {
+                'image_file': image_url,
                 'text_input': 'Write a Amazon Product Description from the Product Image'
             }
-            response = requests.post(API_URL, files=files, data=data)
-    else:
-        json_data = {
-            'image_file': image_url,
-            'text_input': 'Write a Amazon Product Description from the Product Image'
-        }
-        response = requests.post(API_URL, json=json_data)
-    
-    return response.json() if response.ok else None
+            response = requests.post(API_URL, json=json_data, timeout=app.config['REQUEST_TIMEOUT'])
+        
+        if response.ok:
+            return response.json()
+        else:
+            return f"Error: {response.status_code} - {response.text}"
+            
+    except requests.Timeout:
+        return "Request timed out. Please try again."
+    except requests.RequestException as e:
+        return f"Error processing request: {str(e)}"
 
 @app.route('/')
 def index():
