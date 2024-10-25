@@ -338,7 +338,7 @@ def process_image(image_path=None, image_url=None):
         # Structure the output as specified
         return {
             "description": result,
-            "media_url": image_url if image_url else f"/images/{os.path.basename(image_path)}",
+            # "media_url": image_url if image_url else f"/images/{os.path.basename(image_path)}",
             "media_type": "image"
         }
 
