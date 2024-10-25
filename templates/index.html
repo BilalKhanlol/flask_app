@@ -259,6 +259,14 @@
         const descriptionContent = document.getElementById('descriptionContent');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.querySelector('.progress-bar-fill');
+        const MEDIA_PATTERNS = {
+            instagram: /instagram\.com|instagr\.am/,
+            tiktok: /tiktok\.com/,
+            pinterest: /pinterest\.com/,
+            reddit: /reddit\.com/,
+            imgur: /imgur\.com/
+        };
+
 
         
 
@@ -305,6 +313,78 @@
                 urlInput.value = '';
             }
         }
+        // Function to check if URL is from a supported media platform
+        function isSocialMediaUrl(url) {
+            return Object.values(MEDIA_PATTERNS).some(pattern => pattern.test(url));
+        }
+
+        // Function to validate image URL
+        function isValidImageUrl(url) {
+            return url.match(/\.(jpeg|jpg|gif|png|webp)$/i) !== null;
+        }
+
+        // Function to show loading state in preview
+        function showPreviewLoading() {
+            previewPlaceholder.classList.remove('hidden');
+            imagePreview.classList.add('hidden');
+            videoPreview.classList.add('hidden');
+        }
+
+        // Function to handle media preview
+        async function handleMediaPreview(url) {
+            if (!url) return;
+
+            showPreviewLoading();
+
+            if (isSocialMediaUrl(url)) {
+                // For social media URLs, show a placeholder or platform icon
+                previewPlaceholder.classList.remove('hidden');
+                previewPlaceholder.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full">
+                        <div class="text-gray-500 mb-2">Media from ${getPlatformName(url)}</div>
+                        <div class="text-sm text-gray-400">Preview will be generated after processing</div>
+                    </div>
+                `;
+            } else if (isValidImageUrl(url)) {
+                // For direct image URLs
+                try {
+                    const img = new Image();
+                    img.onload = () => {
+                        imagePreview.src = url;
+                        imagePreview.classList.remove('hidden');
+                        previewPlaceholder.classList.add('hidden');
+                    };
+                    img.onerror = () => {
+                        showPreviewError('Failed to load image');
+                    };
+                    img.src = url;
+                } catch (error) {
+                    showPreviewError('Invalid image URL');
+                }
+            } else {
+                showPreviewError('Unsupported media format');
+            }
+        }
+
+        // Function to show preview error
+        function showPreviewError(message) {
+            previewPlaceholder.classList.remove('hidden');
+            previewPlaceholder.innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-red-500">${message}</div>
+                </div>
+            `;
+        }
+
+        // Function to get platform name from URL
+        function getPlatformName(url) {
+            for (const [platform, pattern] of Object.entries(MEDIA_PATTERNS)) {
+                if (pattern.test(url)) {
+                    return platform.charAt(0).toUpperCase() + platform.slice(1);
+                }
+            }
+            return 'Social Media';
+        }
 
         function updatePreview(file) {
             if (file.size > 16 * 1024 * 1024) {
@@ -349,37 +429,40 @@
             }
         });
 
+        // Update the existing urlInput event listener
         urlInput.addEventListener('input', () => {
             if (urlInput.value) {
                 fileInput.value = '';
-                previewPlaceholder.classList.add('hidden');
-                videoPreview.classList.add('hidden');
-                imagePreview.src = urlInput.value;
-                imagePreview.classList.remove('hidden');
+                handleMediaPreview(urlInput.value);
             }
         });
 
-        form.addEventListener('submit', async (e) => {
+
+        const originalFormSubmit = form.onsubmit;
+        form.onsubmit = async (e) => {
             e.preventDefault();
             
-            progressContainer.classList.remove('hidden');
-            descriptionPlaceholder.classList.remove('hidden');
-            descriptionContent.innerHTML = '';
-            updateProgress(0);
-
             const formData = new FormData();
+            const url = urlInput.value;
             
             if (fileInput.files[0]) {
                 formData.append('image_file', fileInput.files[0]);
-            } else if (urlInput.value) {
-                formData.append('image_url', urlInput.value);
+            } else if (url) {
+                formData.append('image_url', url);
+                if (isSocialMediaUrl(url)) {
+                    showPreviewLoading();
+                }
             } else {
                 showError('Please provide an image file or URL');
                 return;
             }
 
             try {
+                progressContainer.classList.remove('hidden');
+                descriptionPlaceholder.classList.remove('hidden');
+                descriptionContent.innerHTML = '';
                 updateProgress(30);
+
                 const response = await fetch('/generate', {
                     method: 'POST',
                     body: formData
@@ -390,7 +473,22 @@
 
                 if (response.ok) {
                     descriptionPlaceholder.classList.add('hidden');
-                    descriptionContent.innerHTML = marked.parse(data || '');
+                    descriptionContent.innerHTML = marked.parse(data.description || '');
+                    
+                    // Update preview if media URL was processed
+                    if (data.media_url) {
+                        if (data.media_type === 'video') {
+                            videoPreview.src = data.media_url;
+                            videoPreview.classList.remove('hidden');
+                            imagePreview.classList.add('hidden');
+                            previewPlaceholder.classList.add('hidden');
+                        } else {
+                            imagePreview.src = data.media_url;
+                            imagePreview.classList.remove('hidden');
+                            videoPreview.classList.add('hidden');
+                            previewPlaceholder.classList.add('hidden');
+                        }
+                    }
                 } else {
                     showError(data.error || 'An error occurred');
                 }
@@ -402,7 +500,7 @@
                     progressContainer.classList.add('hidden');
                 }, 1000);
             }
-        });
+        };
     </script>
 </body>
 </html>

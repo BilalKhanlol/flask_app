@@ -230,7 +230,7 @@ def process_video(video_path):
         # Stream the video file to the API
         with open(video_path, 'rb') as video_file:
             files = {'image_file': ('video.mp4', video_file, 'video/mp4')}
-            data = {'text_input': 'Write a Amazon Product Description from the Video'}
+            data = {'text_input': 'Write an Amazon Product Description from the Video'}
             
             response = requests.post(
                 API_URL,
@@ -238,26 +238,22 @@ def process_video(video_path):
                 data=data,
                 timeout=app.config['REQUEST_TIMEOUT']
             )
-            
-        response.raise_for_status()
-        return response.json()
 
-    except requests.Timeout:
-        app.logger.error("API request timed out")
-        return {"error": "Request timed out. Please try again."}
+        # Check for successful response
+        response.raise_for_status()
+        result = response.json()
+
+        # Structure the output as specified
+        return {
+            "description": result.get("description", "No description provided."),
+            "media_url": f"/videos/{os.path.basename(video_path)}",
+            "media_type": "video"
+        }
+
     except requests.RequestException as e:
-        app.logger.error(f"API request error: {str(e)}")
-        return {"error": f"Error processing request: {str(e)}"}
-    except Exception as e:
-        app.logger.error(f"Error processing video: {str(e)}")
-        return {"error": "Failed to process video"}
-    finally:
-        # Clean up temporary file
-        try:
-            if os.path.exists(video_path):
-                os.unlink(video_path)
-        except Exception as e:
-            app.logger.error(f"Error cleaning up temporary file: {str(e)}")
+        app.logger.error(f"Error processing video: {e}")
+        return {"error": str(e)}
+
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
@@ -292,16 +288,19 @@ def compress_image(image_file):
     except Exception as e:
         app.logger.error(f"Image compression error: {str(e)}")
         raise
-
 def process_image(image_path=None, image_url=None):
     try:
+        # Initialize the request variables
+        files = None
+        json_data = None
+
         if image_path:
             with open(image_path, 'rb') as img:
                 files = {
                     'image_file': img
                 }
                 data = {
-                    'text_input': 'Write a Amazon Product Description from the Product Image'
+                    'text_input': 'Write an Amazon Product Description from the Product Image'
                 }
                 response = requests.post(
                     API_URL,
@@ -312,7 +311,7 @@ def process_image(image_path=None, image_url=None):
         else:
             json_data = {
                 'image_file': image_url,
-                'text_input': 'Write a Amazon Product Description from the Product Image'
+                'text_input': 'Write an Amazon Product Description from the Product Image'
             }
             response = requests.post(
                 API_URL,
@@ -320,15 +319,21 @@ def process_image(image_path=None, image_url=None):
                 timeout=app.config['REQUEST_TIMEOUT']
             )
 
+        # Check for successful response
         response.raise_for_status()
-        return response.json()
+        result = response.json()
 
-    except requests.Timeout:
-        app.logger.error("API request timed out")
-        return {"error": "Request timed out. Please try again."}
+        # Structure the output as specified
+        return {
+            "description": result.get("description", "No description provided."),
+            "media_url": image_url if image_url else f"/images/{os.path.basename(image_path)}",
+            "media_type": "image"
+        }
+
     except requests.RequestException as e:
-        app.logger.error(f"API request error: {str(e)}")
-        return {"error": f"Error processing request: {str(e)}"}
+        app.logger.error(f"Error processing image: {e}")
+        return {"error": str(e)}
+
 
 @app.route('/')
 def index():
