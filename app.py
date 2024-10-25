@@ -8,6 +8,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import mimetypes
 import re
+import shutil
 import tempfile
 
 app = Flask(__name__)
@@ -228,6 +229,14 @@ def process_video(video_path):
         if not mime_type or not mime_type.startswith('video/'):
             return {"error": "Invalid video file"}
 
+        # Define static directory path and create it if it doesn’t exist
+        static_videos_path = os.path.join(app.root_path, 'static', 'videos')
+        os.makedirs(static_videos_path, exist_ok=True)
+
+        # Copy the video to the static directory for frontend access
+        final_video_path = os.path.join(static_videos_path, os.path.basename(video_path))
+        shutil.copy(video_path, final_video_path)
+
         # Stream the video file to the API
         with open(video_path, 'rb') as video_file:
             files = {'image_file': ('video.mp4', video_file, 'video/mp4')}
@@ -247,8 +256,10 @@ def process_video(video_path):
         # Structure the output as specified
         return {
             "description": result,
-            "media_url": f"/videos/{os.path.basename(video_path)}",
-            "media_type": "video"
+            "media_url": f"/static/videos/{os.path.basename(video_path)}",
+            "media_type": "video",
+            "thumb": f"{request.host_url}static/videos/{os.path.basename(video_path)}"
+
         }
 
     except requests.RequestException as e:
@@ -343,7 +354,7 @@ def index():
 # New route to serve the video file
 @app.route('/videos/<filename>')
 def get_video(filename):
-    return send_from_directory(TEMP_VIDEO_DIR, filename)
+    return send_from_directory("tmp", filename)
 
 @app.route('/images/<filename>')
 def get_image(filename):
