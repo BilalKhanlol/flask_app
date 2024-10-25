@@ -20,7 +20,7 @@ def generate_image():
     try:
         # Get parameters from request
         data = request.json
-        prompt = data.get('prompt', '')
+        prompt = data.get('prompt')
         seed = float(data.get('seed', 0))
         randomize_seed = data.get('randomize_seed', True)
         width = float(data.get('width', 1024))
