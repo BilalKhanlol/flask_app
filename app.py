@@ -246,7 +246,7 @@ def process_video(video_path):
         # Structure the output as specified
         return {
             "description": result,
-            "media_url": f"/videos/{os.path.basename(video_path)}",
+            "media_url": video_path,
             "media_type": "video"
         }
 
@@ -326,7 +326,7 @@ def process_image(image_path=None, image_url=None):
         # Structure the output as specified
         return {
             "description": result,
-            "media_url": image_url if image_url else f"/images/{os.path.basename(image_path)}",
+            "media_url": image_url if image_url else image_path,
             "media_type": "image"
         }
 
@@ -374,9 +374,9 @@ def generate_description():
                 
                 # Process the video
                 video_result = process_video(result['video_path'])
-                if os.path.exists(result['video_path']):
-                    app.logger.info(f"Cleaning up temporary file: {result['video_path']}")
-                    os.unlink(result['video_path'])
+                # if os.path.exists(result['video_path']):
+                #     app.logger.info(f"Cleaning up temporary file: {result['video_path']}")
+                #     os.unlink(result['video_path'])
                 return jsonify(video_result)
             
             # Handle regular image URL
