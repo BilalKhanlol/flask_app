@@ -4,9 +4,11 @@ import os
 from werkzeug.utils import secure_filename
 from PIL import Image
 import io
-import magic
+# import magic
 import logging
 from logging.handlers import RotatingFileHandler
+import mimetypes
+
 
 app = Flask(__name__)
 
@@ -128,7 +130,7 @@ def generate_description():
 
             # Validate file type
             filename = secure_filename(file.filename)
-            mime_type = magic.from_buffer(file.read(2048), mime=True)
+            mime_type, _ = mimetypes.guess_type(file.filename)
             file.seek(0)
 
             if not (mime_type.startswith('image/') or mime_type.startswith('video/')):
