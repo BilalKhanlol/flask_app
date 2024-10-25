@@ -134,8 +134,8 @@ def index():
 def generate_description():
     try:
         # Check for Instagram video URL
-        if 'video_url' in request.form:
-            instagram_url = request.form['video_url']
+        if 'image_url' in request.form:
+            instagram_url = request.form['image_url']
             if not instagram_url:
                 return jsonify({'error': 'No URL provided'}), 400
             result = get_instagram_video_info(instagram_url)
