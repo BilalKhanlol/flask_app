@@ -213,8 +213,8 @@
                     progressBar.style.width = '100%';
                     
                     // Display the response
-                    if (data.description) {
-                        descriptionContent.innerHTML = `<p>${data.description}</p>`;
+                    if (data) {
+                        descriptionContent.innerHTML = `<p>${data}</p>`;
                     } else {
                         descriptionContent.innerHTML = '<p>No description generated.</p>';
                     }
@@ -237,7 +237,7 @@
                     }
                     
                     const data = await response.json();
-                    descriptionContent.innerHTML = `<p>${data.description || 'No description generated.'}</p>`;
+                    descriptionContent.innerHTML = `<p>${data || data.description || 'No description generated.'}</p>`;
                 } else {
                     throw new Error('Please provide an image file or URL');
                 }
