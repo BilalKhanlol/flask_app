@@ -37,6 +37,24 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 API_URL = "https://process-image-f6be3exkra-uc.a.run.app"
 
+
+def get_instagram_video_info(instagram_url):
+    try:
+        api_url = "https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/get-info-rapidapi"
+        headers = {
+            "x-rapidapi-key": "ff814a8f8cmsh0aa30af17e3e1cdp1ed0f2jsnbd8e56c092ca",#os.getenv("RAPIDAPI_KEY"),  # Securely store your API key
+            "x-rapidapi-host": "instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com"
+        }
+        querystring = {"url": instagram_url}
+        response = requests.get(api_url, headers=headers, params=querystring)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.RequestException as e:
+        app.logger.error(f"Instagram API request error: {str(e)}")
+        return {"error": "Failed to fetch Instagram video info"}
+
+
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in allowed_extensions
@@ -115,6 +133,15 @@ def index():
 @app.route('/generate', methods=['POST'])
 def generate_description():
     try:
+        # Check for Instagram video URL
+        if 'video_url' in request.form:
+            instagram_url = request.form['video_url']
+            if not instagram_url:
+                return jsonify({'error': 'No URL provided'}), 400
+            result = get_instagram_video_info(instagram_url)
+            return jsonify(result)
+        
+        # Process file uploads if video_url is not provided
         if 'image_file' in request.files:
             file = request.files['image_file']
             
@@ -177,6 +204,7 @@ def generate_description():
     except Exception as e:
         app.logger.error(f"Error in generate_description: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
+
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
