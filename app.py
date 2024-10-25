@@ -14,7 +14,6 @@ TEMP_DIR = tempfile.mkdtemp()
 @app.route('/')
 def home():
     return render_template('index.html')
-
 @app.route('/generate', methods=['POST'])
 def generate_image():
     try:
@@ -28,14 +27,15 @@ def generate_image():
         num_inference_steps = float(data.get('num_inference_steps', 4))
 
         # Generate image using the API
-        result = client.predict({
-            "prompt": prompt,
-            "seed": seed,
-            "randomize_seed": randomize_seed,
-            "width": width,
-            "height": height,
-            "num_inference_steps": num_inference_steps
-        }, api_name="/infer")
+        result = client.predict(
+            prompt=prompt,
+            seed=seed,
+            randomize_seed=randomize_seed,
+            width=width,
+            height=height,
+            num_inference_steps=num_inference_steps,
+            api_name="/infer"
+        )
 
         # The result[0] contains the image path
         image_path = result[0]
