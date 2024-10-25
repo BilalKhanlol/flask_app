@@ -32,18 +32,24 @@ def generate_image():
 
     # Make the POST request to the external API
     response = requests.post(API_URL, json=payload)
+    # Make the POST request to the external API
+    response = requests.post(API_URL, json=payload)
 
     # Check if the response is OK
     if response.status_code == 200:
         # Save the image to a file
-        output_file = 'output_image.webp'
+        output_file = os.path.join(IMAGE_DIR, 'output_image.webp')
         with open(output_file, 'wb') as f:
             f.write(response.content)
 
-        # Return the image file for download
-        return send_file(output_file, mimetype='image/webp', as_attachment=True)
+        # Return the image path for displaying in the HTML
+        return render_template('index.html', image_path='images/output_image.webp')
 
     return "Error generating image", 500
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory(IMAGE_DIR, filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))  # Use PORT env variable for Render

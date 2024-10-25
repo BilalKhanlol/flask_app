@@ -83,5 +83,10 @@
     <div class="loading" id="loading">Generating image...</div>
     <div id="result"></div>
     <div id="error" class="error"></div>
+
+    {% if image_path %}
+        <h2>Generated Image:</h2>
+        <img src="{{ image_path }}" alt="Generated Image" style="max-width: 100%;">
+    {% endif %}
 </body>
 </html>
