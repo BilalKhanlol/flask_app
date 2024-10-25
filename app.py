@@ -1,14 +1,14 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import requests
 import os
 from werkzeug.utils import secure_filename
 from PIL import Image
 import io
-# import magic
 import logging
 from logging.handlers import RotatingFileHandler
 import mimetypes
-
+import re
+import tempfile
 
 app = Flask(__name__)
 
@@ -16,12 +16,14 @@ app = Flask(__name__)
 app.config.update(
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max file size
     UPLOAD_FOLDER='temp_uploads',
+    DOWNLOAD_FOLDER='downloads',
     REQUEST_TIMEOUT=300,  # 5 minutes timeout
     ALLOWED_IMAGE_EXTENSIONS={'png', 'jpg', 'jpeg', 'gif', 'webp'},
     ALLOWED_VIDEO_EXTENSIONS={'mp4', 'mov', 'avi', 'webm'},
     MAX_IMAGE_SIZE=(1920, 1080),  # Max resolution
     COMPRESSED_IMAGE_QUALITY=85,  # JPEG quality
-    MAX_FILE_SIZE_MB=16
+    MAX_FILE_SIZE_MB=16,
+    CHUNK_SIZE=8192  # Streaming chunk size
 )
 
 # Setup logging
@@ -32,73 +34,134 @@ handler.setFormatter(logging.Formatter(
 ))
 app.logger.addHandler(handler)
 
-# Ensure upload directory exists
+# Ensure directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['DOWNLOAD_FOLDER'], exist_ok=True)
 
 API_URL = "https://process-image-f6be3exkra-uc.a.run.app"
+def extract_instagram_shortcode(url):
+    """Extract the shortcode from an Instagram URL."""
+    patterns = [
+        r'instagram.com/p/([^/]+)',
+        r'instagram.com/reel/([^/]+)',
+        r'instagr.am/p/([^/]+)'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1).split('?')[0]  # Remove any query parameters
+    return None
 
-
-def download_file(url, save_path):
-    """Downloads a file from a URL and saves it to the specified path."""
+def stream_url_to_file(url, chunk_size=8192):
+    """Stream a URL to a temporary file and return the file object."""
     try:
-        response = requests.get(url, stream=True)
+        # Create a temporary file
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        
+        # Stream the content
+        response = requests.get(url, stream=True, timeout=30)
         response.raise_for_status()
         
-        with open(save_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                temp_file.write(chunk)
         
-        return save_path
+        temp_file.close()
+        return temp_file.name
     except Exception as e:
-        app.logger.error(f"Failed to download file from {url}: {str(e)}")
+        app.logger.error(f"Failed to stream file from {url}: {str(e)}")
+        if os.path.exists(temp_file.name):
+            os.unlink(temp_file.name)
         return None
 
 def get_instagram_video_info(instagram_url):
+    """Get video information and download from Instagram URL."""
     try:
+        shortcode = extract_instagram_shortcode(instagram_url)
+        if not shortcode:
+            return {'error': 'Invalid Instagram URL format'}
+
         api_url = "https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/get-info-rapidapi"
         headers = {
-            "x-rapidapi-key": "ff814a8f8cmsh0aa30af17e3e1cdp1ed0f2jsnbd8e56c092ca",  # Securely store your API key
+            "x-rapidapi-key": "ff814a8f8cmsh0aa30af17e3e1cdp1ed0f2jsnbd8e56c092ca",
             "x-rapidapi-host": "instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com"
         }
         querystring = {"url": instagram_url}
-        response = requests.get(api_url, headers=headers, params=querystring)
-        response.raise_for_status()
-
-        # Parse JSON response
-        data = response.json()
         
-        # Download thumbnail
-        thumb_url = data.get('thumb')
+        response = requests.get(api_url, headers=headers, params=querystring, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+
+        if 'error' in data:
+            return {'error': data['error']}
+
         video_url = data.get('download_url')
-        if thumb_url and video_url:
-            # Create a directory to save downloaded files
-            os.makedirs(app.config['DOWNLOAD_FOLDER'], exist_ok=True)
+        if not video_url:
+            return {'error': 'Video URL not found'}
 
-            thumb_path = os.path.join(app.config['DOWNLOAD_FOLDER'], f"{data['shortcode']}_thumb.jpg")
-            video_path = os.path.join(app.config['DOWNLOAD_FOLDER'], f"{data['shortcode']}_video.mp4")
+        # Stream video to temporary file
+        temp_video_path = stream_url_to_file(video_url)
+        if not temp_video_path:
+            return {'error': 'Failed to download video'}
 
-            # Download and save the thumbnail
-            downloaded_thumb = download_file(thumb_url, thumb_path)
-            # Download and save the video
-            downloaded_video = download_file(video_url, video_path)
+        return {
+            'video_path': temp_video_path,
+            'error': False,
+            'hosting': 'instagram',
+            'shortcode': shortcode,
+            'mime_type': 'video/mp4'  # Instagram videos are typically MP4
+        }
 
-            if downloaded_thumb and downloaded_video:
-                app.logger.info(f"Successfully downloaded thumbnail to {downloaded_thumb} and video to {downloaded_video}.")
-                return {
-                    'caption': data.get('caption'),
-                    'thumb_path': downloaded_thumb,
-                    'video_path': downloaded_video,
-                    'error': False,
-                    'hosting': 'instagram',
-                    'shortcode': data['shortcode']
-                }
-
-        app.logger.warning("Thumbnail or video URL not found in the response.")
-        return {'error': 'Thumbnail or video URL not found'}
-
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"API request error: {str(e)}")
+        return {'error': 'Failed to fetch Instagram data'}
     except Exception as e:
         app.logger.error(f"Error in get_instagram_video_info: {str(e)}")
         return {'error': 'An unexpected error occurred'}
+
+def process_video(video_path):
+    """Process video file and stream it to the API."""
+    try:
+        # Check if file exists and is a video
+        if not os.path.exists(video_path):
+            return {"error": "Video file not found"}
+
+        mime_type = mimetypes.guess_type(video_path)[0]
+        if not mime_type or not mime_type.startswith('video/'):
+            return {"error": "Invalid video file"}
+
+        # Stream the video file to the API
+        with open(video_path, 'rb') as video_file:
+            files = {'image_file': ('video.mp4', video_file, 'video/mp4')}
+            data = {'text_input': 'Write a Amazon Product Description from the Video'}
+            
+            response = requests.post(
+                API_URL,
+                files=files,
+                data=data,
+                timeout=app.config['REQUEST_TIMEOUT']
+            )
+            
+        response.raise_for_status()
+        return response.json()
+
+    except requests.Timeout:
+        app.logger.error("API request timed out")
+        return {"error": "Request timed out. Please try again."}
+    except requests.RequestException as e:
+        app.logger.error(f"API request error: {str(e)}")
+        return {"error": f"Error processing request: {str(e)}"}
+    except Exception as e:
+        app.logger.error(f"Error processing video: {str(e)}")
+        return {"error": "Failed to process video"}
+    finally:
+        # Clean up temporary file
+        try:
+            if os.path.exists(video_path):
+                os.unlink(video_path)
+        except Exception as e:
+            app.logger.error(f"Error cleaning up temporary file: {str(e)}")
 
 def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
@@ -181,23 +244,21 @@ def generate_description():
         app.logger.info("Received a request to generate a description.")
         
         if 'image_url' in request.form:
-            instagram_url = request.form['image_url']
-            app.logger.info(f"Received Instagram video URL: {instagram_url}")
-
-            result = get_instagram_video_info(instagram_url)
-            if result.get('error'):
-                return jsonify(result)
-
-            # Now use the downloaded video and thumbnail paths for further processing
-            thumb_path = result['thumb_path']
-            video_path = result['video_path']
+            url = request.form['image_url']
+            app.logger.info(f"Processing URL: {url}")
             
-            # Process the video or thumbnail
-            # Example:
-            video_result = process_image(image_path=video_path)
-            #thumb_result = process_image(image_path=thumb_path)
-
-            return jsonify({video_result})
+            # Check if it's an Instagram URL
+            if 'instagram.com' in url or 'instagr.am' in url:
+                result = get_instagram_video_info(url)
+                if result.get('error'):
+                    return jsonify({'error': result['error']}), 400
+                
+                # Process the video
+                video_result = process_video(result['video_path'])
+                return jsonify(video_result)
+            
+            # Handle regular image URL
+            return jsonify(process_image(image_url=url))
 
         
         # Process file uploads if video_url is not provided
