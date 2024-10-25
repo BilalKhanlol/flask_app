@@ -80,12 +80,12 @@ def stream_url_to_file(url, chunk_size=8192):
         app.logger.error(f"Request error while streaming file from {url}: {str(e)}")
     except Exception as e:
         app.logger.error(f"Failed to stream file from {url}: {str(e)}")
-    # finally:
-    #     if temp_file and os.path.exists(temp_file.name):
-    #         app.logger.info(f"Cleaning up temporary file: {temp_file.name}")
-    #         os.unlink(temp_file.name)
+    finally:
+         if temp_file and os.path.exists(temp_file.name):
+             app.logger.info(f"Cleaning up temporary file: {temp_file.name}")
+             os.unlink(temp_file.name)
     
-    # return None
+    return None
 
 def get_instagram_video_info(instagram_url):
     """Get video information and download from Instagram URL."""
