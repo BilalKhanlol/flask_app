@@ -105,7 +105,7 @@
             };
 
             try {
-                const response = await fetch('https://infer-f6be3exkra-uc.a.run.app/', {
+                const response = await fetch('https://infer-f6be3exkra-uc.a.run.app/', {  // Update the URL here
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -113,21 +113,21 @@
                     body: JSON.stringify(data)
                 });
 
-                // Check if response is ok and process as a blob
-                if (response.ok) {
-                    const blob = await response.blob();  // Get the response as a Blob
-                    const imgUrl = URL.createObjectURL(blob);  // Create a URL for the blob
+                const responseData = await response.json();
 
+                // Handle the response data
+                const imgSrc = responseData.result;  // Get the image path from the response
+
+                if (response.ok && imgSrc) {
                     const img = document.createElement('img');
-                    img.src = imgUrl;  // Set the image source to the blob URL
+                    img.src = imgSrc;  // Use the image path received from the API
                     img.style.maxWidth = '100%';
                     result.appendChild(img);
                     
                     // Update the seed input with the new seed
-                    document.getElementById('seed').value = data.seed; // Use seed from data
+                    document.getElementById('seed').value = responseData.seed;
                 } else {
-                    const errorData = await response.json(); // Attempt to get error data
-                    error.textContent = errorData.error || 'An error occurred';
+                    error.textContent = responseData.error || 'An error occurred';
                 }
             } catch (e) {
                 error.textContent = 'An error occurred while generating the image';
