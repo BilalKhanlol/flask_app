@@ -55,26 +55,37 @@ def extract_instagram_shortcode(url):
 
 def stream_url_to_file(url, chunk_size=8192):
     """Stream a URL to a temporary file and return the file object."""
+    temp_file = None  # Initialize temp_file to None for safety
     try:
-        app.logger.warning(f"func : stream_url_to_file , Video URL  {url}.")
+        app.logger.info(f"Function: stream_url_to_file, Video URL: {url}")
+        
         # Create a temporary file
         temp_file = tempfile.NamedTemporaryFile(delete=False)
-        
+        app.logger.info("Temporary file created.")
+
         # Stream the content
         response = requests.get(url, stream=True, timeout=30)
         response.raise_for_status()
-        
-        for chunk in response.iter_content(chunk_size=chunk_size):
+        app.logger.info("Successfully received response from the URL.")
+
+        for chunk_index, chunk in enumerate(response.iter_content(chunk_size=chunk_size)):
             if chunk:
                 temp_file.write(chunk)
-        
+                app.logger.debug(f"Written chunk {chunk_index} of size {len(chunk)} bytes.")
+
         temp_file.close()
+        app.logger.info(f"Streaming completed. File saved to: {temp_file.name}")
         return temp_file.name
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"Request error while streaming file from {url}: {str(e)}")
     except Exception as e:
         app.logger.error(f"Failed to stream file from {url}: {str(e)}")
-        if os.path.exists(temp_file.name):
+    finally:
+        if temp_file and os.path.exists(temp_file.name):
+            app.logger.info(f"Cleaning up temporary file: {temp_file.name}")
             os.unlink(temp_file.name)
-        return None
+    
+    return None
 
 def get_instagram_video_info(instagram_url):
     """Get video information and download from Instagram URL."""
