@@ -133,24 +133,35 @@ def index():
 @app.route('/generate', methods=['POST'])
 def generate_description():
     try:
+        app.logger.info("Received a request to generate a description.")
+        
         # Check for Instagram video URL
         if 'image_url' in request.form:
             instagram_url = request.form['image_url']
+            app.logger.info(f"Received Instagram video URL: {instagram_url}")
+
             if not instagram_url:
+                app.logger.warning("No URL provided for Instagram video.")
                 return jsonify({'error': 'No URL provided'}), 400
+
             result = get_instagram_video_info(instagram_url)
+            app.logger.info("Successfully retrieved Instagram video info.")
             return jsonify(result)
         
         # Process file uploads if video_url is not provided
         if 'image_file' in request.files:
             file = request.files['image_file']
-            
+            app.logger.info("Received file upload.")
+
             if not file or not file.filename:
+                app.logger.warning("No file selected.")
                 return jsonify({'error': 'No file selected'}), 400
 
             # Check file size
             file_size = get_file_size_mb(file)
+            app.logger.info(f"Uploaded file size: {file_size:.2f} MB.")
             if file_size > app.config['MAX_FILE_SIZE_MB']:
+                app.logger.warning(f"File size exceeds {app.config['MAX_FILE_SIZE_MB']}MB limit.")
                 return jsonify({
                     'error': f'File size exceeds {app.config["MAX_FILE_SIZE_MB"]}MB limit'
                 }), 400
@@ -161,49 +172,63 @@ def generate_description():
             file.seek(0)
 
             if not (mime_type.startswith('image/') or mime_type.startswith('video/')):
+                app.logger.warning(f"Invalid file type: {mime_type}.")
                 return jsonify({'error': 'Invalid file type'}), 400
 
             # Process image files
             if mime_type.startswith('image/'):
                 if not allowed_file(filename, app.config['ALLOWED_IMAGE_EXTENSIONS']):
+                    app.logger.warning(f"Invalid image format: {filename}.")
                     return jsonify({'error': 'Invalid image format'}), 400
                 
-                # Compress image
+                app.logger.info(f"Compressing image: {filename}.")
                 compressed_file = compress_image(file)
                 
                 # Save compressed file
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 with open(filepath, 'wb') as f:
                     f.write(compressed_file.getvalue())
+                app.logger.info(f"Compressed image saved to: {filepath}.")
 
             # Process video files
             elif mime_type.startswith('video/'):
                 if not allowed_file(filename, app.config['ALLOWED_VIDEO_EXTENSIONS']):
+                    app.logger.warning(f"Invalid video format: {filename}.")
                     return jsonify({'error': 'Invalid video format'}), 400
                 
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
+                app.logger.info(f"Video saved to: {filepath}.")
 
             # Process file and clean up
             try:
+                app.logger.info(f"Processing file at: {filepath}.")
                 result = process_image(image_path=filepath)
+                app.logger.info("File processed successfully.")
                 return jsonify(result)
             finally:
                 if os.path.exists(filepath):
                     os.remove(filepath)
+                    app.logger.info(f"Temporary file deleted: {filepath}.")
 
         elif 'image_url' in request.form:
             image_url = request.form['image_url']
+            app.logger.info(f"Received image URL: {image_url}.")
             if not image_url:
+                app.logger.warning("No URL provided for image.")
                 return jsonify({'error': 'No URL provided'}), 400
+            
             result = process_image(image_url=image_url)
+            app.logger.info("Successfully processed image URL.")
             return jsonify(result)
 
+        app.logger.warning("No image or video provided in the request.")
         return jsonify({'error': 'No image provided'}), 400
 
     except Exception as e:
         app.logger.error(f"Error in generate_description: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
+
 
 
 @app.errorhandler(413)
