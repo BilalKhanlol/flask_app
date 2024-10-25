@@ -2,11 +2,12 @@ import os
 from flask import Flask, render_template, request, jsonify, send_file
 from gradio_client import Client
 import tempfile
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import logging
 
 # Load environment variables from .env file
-load_dotenv()
+# load_dotenv()
+API_KEY="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"
 
 # Configure logging
 logging.basicConfig(
@@ -21,7 +22,7 @@ logging.basicConfig(
 app = Flask(__name__)
 
 # Initialize Gradio client
-client = Client("black-forest-labs/FLUX.1-schnell", api_key=os.getenv("API_KEY"))
+client = Client("black-forest-labs/FLUX.1-schnell", api_key=API_KEY)
 
 
 # Create a temporary directory to store generated images
