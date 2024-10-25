@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask API Frontend</title>
+</head>
+<body>
+    <h1>Image Generation</h1>
+    <form id="inputForm">
+        <label for="prompt">Prompt:</label>
+        <input type="text" id="prompt" name="prompt" required><br><br>
+
+        <label for="seed">Seed:</label>
+        <input type="number" id="seed" name="seed" value="0><br><br>
+
+        <label for="randomize_seed">Randomize Seed:</label>
+        <input type="checkbox" id="randomize_seed" name="randomize_seed" checked><br><br>
+
+        <label for="width">Width:</label>
+        <input type="number" id="width" name="width" value="1024><br><br>
+
+        <label for="height">Height:</label>
+        <input type="number" id="height" name="height" value="1024><br><br>
+
+        <label for="num_inference_steps">Number of Inference Steps:</label>
+        <input type="number" id="num_inference_steps" name="num_inference_steps" value="4><br><br>
+
+        <button type="submit">Generate Image</button>
+    </form>
+
+    <h2>Result:</h2>
+    <img id="resultImage" style="max-width: 100%; display: none;">
+    <p id="resultSeed"></p>
+
+    <script>
+        document.getElementById('inputForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            data.randomize_seed = data.randomize_seed === 'on';
+
+            const response = await fetch('/infer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+            document.getElementById('resultImage').src = result.filepath;
+            document.getElementById('resultImage').style.display = 'block';
+            document.getElementById('resultSeed').innerText = `Seed: ${result.seed}`;
+        });
+    </script>
+</body>
+</html>

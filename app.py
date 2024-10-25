@@ -1,9 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from gradio_client import Client
 import os
 
 app = Flask(__name__)
 client = Client("black-forest-labs/FLUX.1-schnell")
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/infer', methods=['POST'])
 def infer():
