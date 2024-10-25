@@ -66,15 +66,15 @@
     </div>
     <div class="form-group">
         <label for="width">Width:</label>
-        <input type="number" id="width" value="1024" min="64" max="2048">
+        <input type="number" id="width" value="512" min="64" max="2048">
     </div>
     <div class="form-group">
         <label for="height">Height:</label>
-        <input type="number" id="height" value="1024" min="64" max="2048">
+        <input type="number" id="height" value="512" min="64" max="2048">
     </div>
     <div class="form-group">
         <label for="num_inference_steps">Number of inference steps:</label>
-        <input type="number" id="num_inference_steps" value="4" min="1" max="50">
+        <input type="number" id="num_inference_steps" value="10" min="1" max="50">
     </div>
     
     <button onclick="generateImage()" id="generateBtn">Generate Image</button>
@@ -105,7 +105,7 @@
             };
 
             try {
-                const response = await fetch('/generate', {
+                const response = await fetch('https://infer-f6be3exkra-uc.a.run.app/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -113,18 +113,21 @@
                     body: JSON.stringify(data)
                 });
 
-                const responseData = await response.json();
+                // Check if response is ok and process as a blob
+                if (response.ok) {
+                    const blob = await response.blob();  // Get the response as a Blob
+                    const imgUrl = URL.createObjectURL(blob);  // Create a URL for the blob
 
-                if (responseData.status === 'success') {
                     const img = document.createElement('img');
-                    img.src = responseData.image_path;
+                    img.src = imgUrl;  // Set the image source to the blob URL
                     img.style.maxWidth = '100%';
                     result.appendChild(img);
                     
                     // Update the seed input with the new seed
-                    document.getElementById('seed').value = responseData.seed;
+                    document.getElementById('seed').value = data.seed; // Use seed from data
                 } else {
-                    error.textContent = responseData.message || 'An error occurred';
+                    const errorData = await response.json(); // Attempt to get error data
+                    error.textContent = errorData.error || 'An error occurred';
                 }
             } catch (e) {
                 error.textContent = 'An error occurred while generating the image';
