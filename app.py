@@ -41,6 +41,7 @@ def generate_image():
         return render_template('index.html', image_data=base64_image)
 
     return "Error generating image", 500
+    #port
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)))  # Use PORT env variable for Render
