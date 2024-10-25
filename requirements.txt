@@ -2,3 +2,4 @@ Flask==2.2.5
 Werkzeug==2.2.3
 gradio_client==0.5.3
 gunicorn==20.1.0
+python-dotenv
