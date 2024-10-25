@@ -245,7 +245,7 @@ def process_video(video_path):
 
         # Structure the output as specified
         return {
-            "description": result.get("description", "No description provided."),
+            "description": result,
             "media_url": f"/videos/{os.path.basename(video_path)}",
             "media_type": "video"
         }
@@ -325,7 +325,7 @@ def process_image(image_path=None, image_url=None):
 
         # Structure the output as specified
         return {
-            "description": result.get("description", "No description provided."),
+            "description": result,
             "media_url": image_url if image_url else f"/images/{os.path.basename(image_path)}",
             "media_type": "image"
         }
