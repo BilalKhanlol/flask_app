@@ -60,7 +60,7 @@ def stream_url_to_file(url, chunk_size=8192):
         app.logger.info(f"Function: stream_url_to_file, Video URL: {url}")
         
         # Create a temporary file
-        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
         app.logger.info("Temporary file created.")
 
         # Stream the content
