@@ -1,57 +1,58 @@
 # Flask and its dependencies
-Flask==3.0.0
-Werkzeug==3.0.1
+Flask
+Werkzeug
 
 # Image processing
-Pillow==10.1.0
+Pillow
 
 # File type detection
-python-magic==0.4.27
-python-magic-bin==0.4.14; sys_platform == 'win32'
+python-magic
+python-magic-bin
+
 
 # HTTP requests
-requests==2.31.0
+requests
 
 # File handling and security
-secure-filename==0.1.0
+secure-filename
 
 # Logging
-logging==0.4.9.6
+logging
 
 # Development tools
-python-dotenv==1.0.0
-pytest==7.4.3
-pytest-cov==4.1.0
+python-dotenv
+pytest
+pytest-cov
 
 # Production server
-gunicorn==21.2.0
+gunicorn
 
 # Compression and optimization
-compression==0.1.5
+compression
 
 # Security
-Flask-Talisman==1.1.0
-Flask-SeaSurf==1.1.1
+Flask-Talisman
+Flask-SeaSurf
 
 # Rate limiting
-Flask-Limiter==3.5.0
+Flask-Limiter
 
 # Environment variables
-python-dotenv==1.0.0
+python-dotenv
 
 # Error tracking
-sentry-sdk[flask]==1.32.0
+sentry-sdk[flask]
 
 # Cache
-Flask-Caching==2.1.0
-redis==5.0.1
+Flask-Caching
+redis
 
 # Async support
-aiohttp==3.8.6
-asyncio==3.4.3
+aiohttp
+asyncio
 
 # Performance monitoring
-prometheus-flask-exporter==0.22.4
+prometheus-flask-exporter
 
 # Clean up temporary files
-schedule==1.2.1
+schedule
