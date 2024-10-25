@@ -346,7 +346,7 @@ def get_video(filename):
     return send_from_directory(TEMP_VIDEO_DIR, filename)
 
 @app.route('/images/<filename>')
-def get_video(filename):
+def get_image(filename):
     return send_from_directory(TEMP_VIDEO_DIR, filename)
 
 @app.route('/generate', methods=['POST'])
