@@ -163,10 +163,10 @@ def stream_url_to_file(url, chunk_size=8192):
     
     # return None
 
-def get_instagram_video_info(instagram_url):
+def get_video_info(instagram_url):
     """Get video information and download from Instagram URL."""
     try:
-        shortcode = extract_instagram_shortcode(instagram_url)
+        shortcode = extract_shortcode(instagram_url)
         if not shortcode:
             return {'error': 'Invalid Instagram URL format'}
 
@@ -212,7 +212,7 @@ def get_instagram_video_info(instagram_url):
         app.logger.error(f"API request error: {str(e)}")
         return {'error': 'Failed to fetch Instagram data'}
     except Exception as e:
-        app.logger.error(f"Error in get_instagram_video_info: {str(e)}")
+        app.logger.error(f"Error in get_video_info: {str(e)}")
         return {'error': 'An unexpected error occurred'}
 
 
@@ -355,8 +355,8 @@ def generate_description():
 
             # Check if the URL matches any supported platform
             if any(platform in url for platform in supported_platforms):
-                # Process the URL with get_instagram_video_info (generalized for all platforms)
-                result = get_instagram_video_info(url)
+                # Process the URL with get_video_info (generalized for all platforms)
+                result = get_video_info(url)
                 if result.get('error'):
                     return jsonify({'error': result['error']}), 400
 
