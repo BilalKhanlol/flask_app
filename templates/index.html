@@ -243,7 +243,9 @@
         // Initialize marked for Markdown parsing
         marked.setOptions({
             breaks: true,
-            gfm: true
+            gfm: true,
+            mangle: false,
+            headerIds: false
         });
 
         const form = document.getElementById('uploadForm');
@@ -257,6 +259,130 @@
         const descriptionContent = document.getElementById('descriptionContent');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.querySelector('.progress-bar-fill');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            progressContainer.classList.remove('hidden');
+            descriptionPlaceholder.classList.remove('hidden');
+            descriptionContent.innerHTML = '';
+            updateProgress(0);
+
+            const formData = new FormData();
+            
+            // Handle file or URL input
+            if (fileInput.files[0]) {
+                formData.append('image_file', fileInput.files[0]);
+            } else if (urlInput.value.trim()) {
+                // For JSON requests, create a JSON payload instead
+                const jsonData = {
+                    image_file: urlInput.value.trim()
+                };
+                
+                try {
+                    updateProgress(30);
+                    const response = await fetch('/process_image', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jsonData)
+                    });
+
+                    updateProgress(70);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Received data:', data); // Debug log
+                    
+                    // Hide loading state
+                    descriptionPlaceholder.classList.add('hidden');
+                    
+                    // Check if data exists and has the expected format
+                    if (data && typeof data === 'object') {
+                        // Convert the response to markdown and display it
+                        const markdownContent = convertResponseToMarkdown(data);
+                        descriptionContent.innerHTML = marked.parse(markdownContent);
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                    
+                    updateProgress(100);
+                    
+                } catch (error) {
+                    console.error('Error:', error); // Debug log
+                    showError(`Failed to generate description: ${error.message}`);
+                }
+                
+            } else {
+                showError('Please provide an image file or URL');
+                progressContainer.classList.add('hidden');
+                return;
+            }
+        });
+
+        // Helper function to convert API response to markdown
+        function convertResponseToMarkdown(data) {
+            // Check what properties are available in the response
+            console.log('Converting response to markdown:', data);
+            
+            // If the response is already a string, return it
+            if (typeof data === 'string') {
+                return data;
+            }
+            
+            // If it's an array, join the elements
+            if (Array.isArray(data)) {
+                return data.join('\n\n');
+            }
+            
+            // If it's an object, format it nicely
+            let markdown = '';
+            
+            // Handle different possible response formats
+            if (data.description) {
+                markdown += data.description;
+            } else if (data.result) {
+                markdown += data.result;
+            } else {
+                // Format the entire object as markdown
+                markdown = Object.entries(data)
+                    .map(([key, value]) => `**${key}:** ${value}`)
+                    .join('\n\n');
+            }
+            
+            return markdown;
+        }
+
+        function showError(message) {
+            descriptionContent.innerHTML = `
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">${message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Hide loading states
+            progressContainer.classList.add('hidden');
+            descriptionPlaceholder.classList.add('hidden');
+        }
+
+        function updateProgress(progress) {
+            progressBar.style.width = `${progress}%`;
+        }
+
 
         // Drag and drop handling
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
