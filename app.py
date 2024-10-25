@@ -93,12 +93,12 @@ def get_instagram_video_info(instagram_url):
         data = response.json()
 
         # Log the data received from the API
-        app.logger.info(f"Data received from API: {data}")
+        app.logger.info(f"Download Data received from API: {data.download_url}")
 
         if 'error' in data:
             return {'error': data['error']}
 
-        video_url = data.get('download_url')
+        video_url = data.download_url
         if not video_url:
             return {'error': 'Video URL not found'}
 
