@@ -28,7 +28,7 @@ def generate_image():
 
         # Generate image using the API
         result = client.predict(
-            prompt=prompt,
+            inputs=[prompt],  # The prompt might need to be in a list or tuple
             seed=seed,
             randomize_seed=randomize_seed,
             width=width,
