@@ -39,20 +39,96 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['DOWNLOAD_FOLDER'], exist_ok=True)
 
 API_URL = "https://process-image-f6be3exkra-uc.a.run.app"
-def extract_instagram_shortcode(url):
-    """Extract the shortcode from an Instagram URL."""
-    patterns = [
-        r'instagram.com/p/([^/]+)',
-        r'instagram.com/reel/([^/]+)',
-        r'instagr.am/p/([^/]+)'
-    ]
+def extract_shortcode(url):
+    """Extract the shortcode or unique identifier from various platform URLs."""
     
-    for pattern in patterns:
-        match = re.search(pattern, url)
-        if match:
-            return match.group(1).split('?')[0]  # Remove any query parameters
-    return None
+    # Define patterns for each supported platform
+    patterns = {
+        'instagram': [
+            r'instagram.com/p/([^/]+)',
+            r'instagram.com/reel/([^/]+)',
+            r'instagr.am/p/([^/]+)'
+        ],
+        'tiktok': [
+            r'tiktok.com/@[^/]+/video/([^?&/]+)'
+        ],
+        'capcut': [
+            r'capcut.com/share/([^/]+)'
+        ],
+        'pinterest': [
+            r'pinterest.com/pin/([^/]+)'
+        ],
+        'imdb': [
+            r'imdb.com/title/([^/]+)'
+        ],
+        'imgur': [
+            r'imgur.com/(?:gallery/|a/)?([^/]+)'
+        ],
+        'ifunny': [
+            r'ifunny.co/video/([^/]+)',
+            r'ifunny.co/picture/([^/]+)'
+        ],
+        'reddit': [
+            r'reddit.com/r/[^/]+/comments/([^/]+)'
+        ],
+        'vimeo': [
+            r'vimeo.com/(\d+)'
+        ],
+        'snapchat': [
+            r'snapchat.com/add/([^/]+)',
+            r'story.snapchat.com/s/([^/]+)'
+        ],
+        'likee': [
+            r'likee.video/video/([^/]+)'
+        ],
+        'linkedin': [
+            r'linkedin.com/posts/([^/]+)'
+        ],
+        'tumblr': [
+            r'tumblr.com/post/([^/]+)'
+        ],
+        'hipi': [
+            r'hipi.co.in/video/([^/]+)'
+        ],
+        'telegram': [
+            r't.me/([^/]+)'
+        ],
+        'getstickerpack': [
+            r'getstickerpack.com/stickers/([^/]+)'
+        ],
+        'oke.ru': [
+            r'ok.ru/video/([^/]+)'
+        ],
+        'streamable': [
+            r'streamable.com/([^/]+)'
+        ],
+        'weibo': [
+            r'weibo.com/(\d+)'
+        ],
+        'soundcloud': [
+            r'soundcloud.com/[^/]+/([^/]+)'
+        ],
+        'mixcloud': [
+            r'mixcloud.com/[^/]+/([^/]+)'
+        ],
+        'spotify': [
+            r'spotify.com/track/([^/]+)',
+            r'open.spotify.com/track/([^/]+)'
+        ],
+        'zingmp3': [
+            r'zingmp3.vn/bai-hat/([^/]+)'
+        ]
+    }
 
+    # Iterate over the patterns dictionary to find a match for the URL
+    for platform, regex_patterns in patterns.items():
+        for pattern in regex_patterns:
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1).split('?')[0]  # Remove any query parameters
+
+    # Return None if no patterns match
+    return None
 def stream_url_to_file(url, chunk_size=8192):
     """Stream a URL to a temporary file and return the file object."""
     temp_file = None  # Initialize temp_file to None for safety
@@ -267,15 +343,25 @@ def generate_description():
             url = request.form['image_url']
             app.logger.info(f"Processing URL: {url}")
             
-            # Check if it's an Instagram URL
-            if 'instagram.com' in url or 'instagr.am' in url:
+            # Define supported platforms
+            supported_platforms = [
+                'instagram.com', 'instagr.am', 'tiktok.com', 'capcut.com',
+                'pinterest.com', 'imdb.com', 'imgur.com', 'ifunny.co',
+                'reddit.com', 'vimeo.com', 'snapchat.com', 'likee.video',
+                'linkedin.com', 'tumblr.com', 'hipi.co.in', 't.me',
+                'getstickerpack.com', 'ok.ru', 'streamable.com', 'weibo.com',
+                'soundcloud.com', 'mixcloud.com', 'spotify.com', 'zingmp3.vn'
+            ]
+
+            # Check if the URL matches any supported platform
+            if any(platform in url for platform in supported_platforms):
+                # Process the URL with get_instagram_video_info (generalized for all platforms)
                 result = get_instagram_video_info(url)
                 if result.get('error'):
                     return jsonify({'error': result['error']}), 400
 
-                                # Log the entire result for debugging
-                                    # Log the entire result for debugging
-                    app.logger.info(f"Instagram API result: {result}")
+                # Log the entire result for debugging
+                app.logger.info(f"API result for URL {url}: {result}")
 
                 # Ensure 'video_path' exists in the result before accessing it
                 if 'video_path' not in result:
