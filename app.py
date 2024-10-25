@@ -180,8 +180,8 @@ def generate_description():
     try:
         app.logger.info("Received a request to generate a description.")
         
-        if 'video_url' in request.form:
-            instagram_url = request.form['video_url']
+        if 'image_url' in request.form:
+            instagram_url = request.form['image_url']
             app.logger.info(f"Received Instagram video URL: {instagram_url}")
 
             result = get_instagram_video_info(instagram_url)
