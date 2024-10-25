@@ -1,34 +1,18 @@
-# Flask and its dependencies
+# Core framework and dependencies
 Flask
 Werkzeug
 
 # Image processing
 Pillow
 
-# File type detection
-python-magic
-python-magic-bin
-
-
 # HTTP requests
 requests
-
-# File handling and security
-secure-filename
-
-# Logging
-logging
-
-# Development tools
-python-dotenv
-pytest
-pytest-cov
 
 # Production server
 gunicorn
 
-# Compression and optimization
-compression
+# Environment variables
+python-dotenv
 
 # Security
 Flask-Talisman
@@ -37,22 +21,9 @@ Flask-SeaSurf
 # Rate limiting
 Flask-Limiter
 
-# Environment variables
-python-dotenv
-
-# Error tracking
-sentry-sdk[flask]
-
-# Cache
+# Caching (optional, but useful for performance)
 Flask-Caching
 redis
 
-# Async support
-aiohttp
-asyncio
-
-# Performance monitoring
-prometheus-flask-exporter
-
-# Clean up temporary files
-schedule
+# Error tracking (optional, for remote error logging)
+sentry-sdk[flask]
