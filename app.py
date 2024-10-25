@@ -26,9 +26,12 @@ def generate_image():
         height = float(data.get('height', 1024))
         num_inference_steps = float(data.get('num_inference_steps', 4))
 
+        print("data :"+data)
+        print("prompt :"+prompt)
+
         # Generate image using the API
         result = client.predict(
-            inputs=[prompt],  # The prompt might need to be in a list or tuple
+            prompt,  # The prompt might need to be in a list or tuple
             seed=seed,
             randomize_seed=randomize_seed,
             width=width,
