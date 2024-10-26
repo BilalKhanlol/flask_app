@@ -238,12 +238,13 @@
                 <h1 class="text-2xl font-bold">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/800px-Amazon_logo.svg.png" alt="Amazon Logo" class="h-8">
                 </h1>
-                <div class="text-sm">Product Description Generator</div>
+                <div class="text-sm">Product Description Generator by <a href="https://neelanjanchakraborty.in/" target="_blank" rel="noopener noreferrer" 
+                    class="developer-link">Neelanjan Chakraborty</a></div>
             </div>
         </div>
         <nav class="amazon-nav p-2">
             <div class="container mx-auto">
-                <div class="text-sm">Home > Tools > Description Generator</div>
+                <div class="text-sm">Home > Amazon Tools >SEO Description Generator</div>
             </div>
         </nav>
     </header>
@@ -278,7 +279,7 @@
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-2">Or enter URL to video or image from your favorite platform:</label>
-                            <input type="url" id="urlInput" class="form-control border rounded" 
+                            <input type="url" id="urlInput" class="w-full p-2 border rounded"
                                    placeholder="e.g., Instagram, TikTok, Reddit, Imgur, etc." onfocus="this.classList.add('focus-glow')" onblur="this.classList.remove('focus-glow')">
                         </div>
                                             <!-- Platform Support Section -->
@@ -299,17 +300,17 @@
 
             <!-- Right Column -->
             <div class="product-container p-6">
-                    <!-- Preview Section -->
-                    <div class="preview-container p-6">
-                        <h2 class="text-xl  text-center font-bold m-4">Preview</h2>
-                        <div class="preview-container">
-                            <div id="previewPlaceholder" class="skeleton w-full h-full"></div>
-                            <img id="imagePreview" class="hidden" alt="Product preview">
-                            <video id="videoPreview" class="hidden" controls></video>
-                        </div>
-                    </div>
+                <h2 class="text-xl  text-center font-bold m-4">Preview</h2>
+                <div class="preview-container">
+                    <div id="previewPlaceholder" class="skeleton w-full h-full"></div>
+                    <img id="imagePreview" class="hidden" alt="Product preview">
+                    <video id="videoPreview" class="hidden" controls></video>
                 </div>
+            </div>
+        </div>
 
+            <div class="product-container p-6">
+                    <!-- Preview Section -->
                 <h2 class="text-xl font-bold mt-2 mb-4">Generated Description</h2>
                 <div id="progressContainer" class="hidden mb-4">
                     <div class="progress-bar">
