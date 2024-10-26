@@ -423,8 +423,19 @@
                         </div>
                     </div>
             </div>
-        </div>
+          </div>
+    </div>
     </main>
+        <!-- Footer -->
+        <footer class="amazon-footer">
+            <div class="container mx-auto px-4 text-center">
+                <p class="mb-2">Developed by 
+                    <a href="https://neelanjanchakraborty.in/" target="_blank" rel="noopener noreferrer" 
+                       class="developer-link">Neelanjan Chakraborty</a>
+                </p>
+                <p class="text-sm">for Hackerearth Amazon Hackathon</p>
+            </div>
+        </footer>
     <script>
         // Initialize marked for Markdown parsing
         marked.setOptions({
@@ -521,13 +532,6 @@
             return str.trim().split(/\s+/).filter(word => word.length > 0).length;
         }
 
-        // Function to update word count
-        function updateWordCount() {
-            const content = document.getElementById('descriptionContent').textContent;
-            const wordCount = countWords(content);
-            document.getElementById('wordCount').textContent = wordCount;
-        }
-
         // Copy functionality
         document.getElementById('copyButton').addEventListener('click', async () => {
             const content = document.getElementById('descriptionContent').textContent;
@@ -542,10 +546,6 @@
                 console.error('Failed to copy text:', err);
             }
         });
-
-        // Initial word count
-        updateWordCount();
-
         // Function to handle media preview
         async function handleMediaPreview(url) {
             if (!url) return;
@@ -718,15 +718,5 @@
             }
         };
     </script>
-    <!-- Footer -->
-    <footer class="amazon-footer">
-        <div class="container mx-auto px-4 text-center">
-            <p class="mb-2">Developed by 
-                <a href="https://neelanjanchakraborty.in/" target="_blank" rel="noopener noreferrer" 
-                   class="developer-link">Neelanjan Chakraborty</a>
-            </p>
-            <p class="text-sm">for Hackerearth Amazon Hackathon</p>
-        </div>
-    </footer>
 </body>
 </html>
