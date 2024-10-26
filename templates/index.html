@@ -90,7 +90,7 @@
             background-color: var(--amazon-dark);
             color: white;
             padding: 10px 20px;
-            margin: -20px -20px 20px -20px;
+            margin: -20px -30px 20px -30px;
             border-radius: 8px 8px 0 0;
             display: flex;
             justify-content: space-between;
@@ -377,7 +377,7 @@
             <div class="product-container p-6">
                 <h2 class="text-xl  text-center font-bold m-4">Preview</h2>
                 <div class="preview-container">
-                    <div id="previewPlaceholder" class="skeleton w-full h-full"></div>
+                    <div id="previewPlaceholder"></div>
                     <img id="imagePreview" class="hidden" alt="Product preview">
                     <video id="videoPreview" class="hidden" controls></video>
                 </div>
@@ -416,12 +416,10 @@
                             </button>
                             <span class="copy-success ms-2" id="copySuccess">✓ Copied!</span>
                         </div>
+                    </div>
             </div>
         </div>
     </main>
-
-
-
     <script>
         // Initialize marked for Markdown parsing
         marked.setOptions({
