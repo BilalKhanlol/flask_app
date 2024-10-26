@@ -207,6 +207,27 @@
             font-size: 0.9rem;
             line-height: 1.6;
         }
+            /* Add your custom glow effects for focus */
+        .focus-glow {
+            box-shadow: 0 0 8px rgba(225, 48, 108, 0.7); /* Default pink glow for Instagram */
+        }
+
+        /* Change the glow color based on specific classes */
+        .instagram-glow:focus {
+            box-shadow: 0 0 8px #E1306C; /* Instagram pink */
+        }
+
+        .tiktok-glow:focus {
+            box-shadow: 0 0 8px #69C9D0; /* TikTok teal */
+        }
+
+        .reddit-glow:focus {
+            box-shadow: 0 0 8px #FF4500; /* Reddit orange */
+        }
+
+        .imgur-glow:focus {
+            box-shadow: 0 0 8px #85BF25; /* Imgur green */
+        }
     </style>
 </head>
 <body>
@@ -246,8 +267,8 @@
                                     Choose File
                                 </label>
                             </div>
-                            <div class="text-sm text-gray-500 mb-4">
-                                <ul class="list-disc ml-5">
+                            <div class="text-sm text-gray-500 mb-4 ">
+                                <ul class="list-disc ml-5 mt-5">
                                     <li>Maximum file size: 16MB</li>
                                     <li>Supported formats: PNG, JPG, JPEG, GIF, WEBP, MP4, MOV, AVI, WEBM</li>
                                     <li>Recommended image resolution: 1920x1080 or lower</li>
@@ -256,16 +277,15 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Or enter image URL:</label>
-                            <input type="url" id="urlInput" class="w-full p-2 border rounded" 
-                                   placeholder="https://example.com/image.jpg">
+                            <label class="block text-sm font-medium mb-2">Or enter URL to video or image from your favorite platform:</label>
+                            <input type="url" id="urlInput" class="form-control border rounded" 
+                                   placeholder="e.g., Instagram, TikTok, Reddit, Imgur, etc." onfocus="this.classList.add('focus-glow')" onblur="this.classList.remove('focus-glow')">
                         </div>
-
                                             <!-- Platform Support Section -->
                         <div class="platform-support mb-4">
                             <h3 class="font-semibold mb-2">Supported Platforms</h3>
                             <p class="platform-list">
-                                TikTok, Capcut, Pinterest, IMDB, Imgur, iFunny, Reddit, Vimeo, Snapchat, Likee, LinkedIn, 
+                                Instagram ,TikTok, Capcut, Pinterest, IMDB, Imgur, iFunny, Reddit, Vimeo, Snapchat, Likee, LinkedIn, 
                                 Tumblr, Hipi, Telegram, Getstickerpack, OK.ru, Streamable, Weibo, SoundCloud, Mixcloud, 
                                 Spotify, Zingmp3 and more...
                             </p>
@@ -277,20 +297,20 @@
                     </form>
                 </div>
 
-                <!-- Preview Section -->
-                <div class="product-container p-6">
-                    <h2 class="text-xl font-bold mb-4">Preview</h2>
-                    <div class="preview-container">
-                        <div id="previewPlaceholder" class="skeleton w-full h-full"></div>
-                        <img id="imagePreview" class="hidden" alt="Product preview">
-                        <video id="videoPreview" class="hidden" controls></video>
-                    </div>
-                </div>
-            </div>
-
             <!-- Right Column -->
             <div class="product-container p-6">
-                <h2 class="text-xl font-bold mb-4">Generated Description</h2>
+                    <!-- Preview Section -->
+                    <div class="preview-container p-6">
+                        <h2 class="text-xl  text-center font-bold m-4">Preview</h2>
+                        <div class="preview-container">
+                            <div id="previewPlaceholder" class="skeleton w-full h-full"></div>
+                            <img id="imagePreview" class="hidden" alt="Product preview">
+                            <video id="videoPreview" class="hidden" controls></video>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-xl font-bold mt-2 mb-4">Generated Description</h2>
                 <div id="progressContainer" class="hidden mb-4">
                     <div class="progress-bar">
                         <div class="progress-bar-fill"></div>
