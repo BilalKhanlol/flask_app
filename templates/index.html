@@ -16,10 +16,54 @@
             --amazon-blue: #232F3E;
         }
 
+
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: #EAEDED;
             color: #0F1111;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            height: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .word-count {
+            color: #565959;
+            font-size: 0.875rem;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #F0F2F2;
+            border-radius: 4px;
+        }
+
+        .copy-success {
+            position: absolute;
+            top: 60px;
+            right: 60px;
+            color: #067D62;
+            display: none;
+            background-color: #E7F4F0;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .description-border {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
         }
 
         .amazon-button {
@@ -311,21 +355,40 @@
 
             <div class="product-container p-6">
                     <!-- Preview Section -->
-                <h2 class="text-xl font-bold mt-2 mb-4">Generated Description</h2>
-                <div id="progressContainer" class="hidden mb-4">
+                    <div class="amazon-header">
+                        <span class="amazon-logo">amazon</span>
+                        <span>Product Description</span>
+                    </div>                <div id="progressContainer" class="hidden mb-4">
                     <div class="progress-bar">
                         <div class="progress-bar-fill"></div>
                     </div>
                     <div class="text-sm text-center mt-2">Generating description...</div>
                 </div>
-                <div id="descriptionContainer">
-                    <div id="descriptionPlaceholder" class="hidden">
-                        <div class="skeleton h-4 w-3/4 mb-2"></div>
-                        <div class="skeleton h-4 w-full mb-2"></div>
-                        <div class="skeleton h-4 w-5/6 mb-2"></div>
+                <div id="descriptionContainer" class="description-border">
+        
+                    <div id="descriptionPlaceholder">
+                        <div class="skeleton w-75"></div>
+                        <div class="skeleton w-100"></div>
+                        <div class="skeleton w-50"></div>
                     </div>
-                    <div id="descriptionContent" class="markdown-content"></div>
-                </div>
+                    
+                    <div class="content-section">
+                        <div id="descriptionContent" class="markdown-content">
+                            <!-- <p>Your product description goes here. Add detailed information about your product to help customers make an informed decision.</p> -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="word-count">
+                            <i class="fas fa-file-alt"></i>
+                            Words: <span id="wordCount">0</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button id="copyButton" class="amazon-button">
+                                Copy Description
+                            </button>
+                            <span class="copy-success ms-2" id="copySuccess">✓ Copied!</span>
+                        </div>
             </div>
         </div>
     </main>
@@ -422,6 +485,36 @@
             imagePreview.classList.add('hidden');
             videoPreview.classList.add('hidden');
         }
+
+                // Function to count words
+                function countWords(str) {
+            return str.trim().split(/\s+/).filter(word => word.length > 0).length;
+        }
+
+        // Function to update word count
+        function updateWordCount() {
+            const content = document.getElementById('descriptionContent').textContent;
+            const wordCount = countWords(content);
+            document.getElementById('wordCount').textContent = wordCount;
+        }
+
+        // Copy functionality
+        document.getElementById('copyButton').addEventListener('click', async () => {
+            const content = document.getElementById('descriptionContent').textContent;
+            try {
+                await navigator.clipboard.writeText(content);
+                const copySuccess = document.getElementById('copySuccess');
+                copySuccess.style.display = 'inline';
+                setTimeout(() => {
+                    copySuccess.style.display = 'none';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text:', err);
+            }
+        });
+
+        // Initial word count
+        updateWordCount();
 
         // Function to handle media preview
         async function handleMediaPreview(url) {
