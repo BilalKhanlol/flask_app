@@ -249,9 +249,13 @@ def process_video(video_path):
                 timeout=app.config['REQUEST_TIMEOUT']
             )
 
+        
+
         # Check for successful response
         response.raise_for_status()
         result = response.json()
+
+        app.logger.info(f" processed video: {result}")
 
         # Structure the output as specified
         return {
@@ -334,6 +338,8 @@ def process_image(image_path=None, image_url=None):
         # Check for successful response
         response.raise_for_status()
         result = response.json()
+
+        app.logger.info(f" processed image: {result}")
 
         # Structure the output as specified
         return {
