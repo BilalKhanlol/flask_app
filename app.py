@@ -368,6 +368,36 @@ def get_image(filename):
 
 @app.route('/generate', methods=['POST'])
 def generate_description():
+    if 'test' in request.form:
+        md="""# [TV Enhancer Pro: Colorful & Immersive Light Strip]
+    ## Product Description
+    TV Enhancer Pro is a must-have accessory for any TV owner who wants to take their viewing experience to the next level. This innovative light strip adds a splash of color and ambiance to any room, making your home entertainment setup more engaging and immersive.
+    ## Key Features
+    - **Easy to Install:** Simply stick the light strip to the back of your TV and plug it in. No complicated installation process or wiring required.
+    - **Multiple Color Options:** Choose from a variety of colors and effects to match your mood or the content you're watching.
+    - **Enhanced Viewing:** The light strip illuminates the room, reducing eye strain and creating a more immersive viewing experience.
+    - **Sleek and Stylish:** The light strip is thin and discreet, so it won't detract from the look of your TV.
+    ## Technical Specifications
+    | Specification | Detail |
+    |--------------|---------|
+    | Color Modes | RGB, Warm White, Cool White, Flashing, Static |
+    | Power Consumption | 5W |
+    | Dimensions | 60 inches (152.4 cm) x 1 inch (2.5 cm) |
+    | Material | High-quality, flexible PVC |
+    | Weight | 12 oz (340 g) |
+    ## What's in the Box
+    - 1 x TV Enhancer Pro Light Strip
+    - 1 x Adhesive Strip
+    - 1 x AC Power Adapter
+    - 1 x User Manual
+    ## Frequently Asked Questions
+    **Q: Can I install the TV Enhancer Pro light strip on a curved TV?**
+    A: Yes, the flexible design of the light strip allows it to be installed on curved TVs as well as flat-screen TVs.
+    **Q: Is the TV Enhancer Pro light strip waterproof?**
+    A: No, the light strip is not waterproof and should not be used in areas where it may come into contact with water.
+    **Q: Can I control the color and brightness of the TV Enhancer Pro light strip?**
+    A: The TV Enhancer"""
+        return jsonify(md), 200
     try:
         app.logger.info("Received a request to generate a description.")
         
