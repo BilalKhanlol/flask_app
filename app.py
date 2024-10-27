@@ -369,39 +369,11 @@ def get_image(filename):
 @app.route('/generate', methods=['POST'])
 def generate_description():
     if 'test' in request.form:
-        md="""# [TV Enhancer Pro: Colorful & Immersive Light Strip]
-    ## Product Description
-    TV Enhancer Pro is a must-have accessory for any TV owner who wants to take their viewing experience to the next level. This innovative light strip adds a splash of color and ambiance to any room, making your home entertainment setup more engaging and immersive.
-    ## Key Features
-    - **Easy to Install:** Simply stick the light strip to the back of your TV and plug it in. No complicated installation process or wiring required.
-    - **Multiple Color Options:** Choose from a variety of colors and effects to match your mood or the content you're watching.
-    - **Enhanced Viewing:** The light strip illuminates the room, reducing eye strain and creating a more immersive viewing experience.
-    - **Sleek and Stylish:** The light strip is thin and discreet, so it won't detract from the look of your TV.
-    ## Technical Specifications
-    | Specification | Detail |
-    |--------------|---------|
-    | Color Modes | RGB, Warm White, Cool White, Flashing, Static |
-    | Power Consumption | 5W |
-    | Dimensions | 60 inches (152.4 cm) x 1 inch (2.5 cm) |
-    | Material | High-quality, flexible PVC |
-    | Weight | 12 oz (340 g) |
-    ## What's in the Box
-    - 1 x TV Enhancer Pro Light Strip
-    - 1 x Adhesive Strip
-    - 1 x AC Power Adapter
-    - 1 x User Manual
-    ## Frequently Asked Questions
-    **Q: Can I install the TV Enhancer Pro light strip on a curved TV?**
-    A: Yes, the flexible design of the light strip allows it to be installed on curved TVs as well as flat-screen TVs.
-    **Q: Is the TV Enhancer Pro light strip waterproof?**
-    A: No, the light strip is not waterproof and should not be used in areas where it may come into contact with water.
-    **Q: Can I control the color and brightness of the TV Enhancer Pro light strip?**
-    A: The TV Enhancer"""
         return {
-            "description": md,
+            "description": "\n---\n\n## [Colorful Ambiance Light Kit]\n\n## Product Description\nThis **Colorful Ambiance Light Kit** is a great addition to any living room, providing an easy and stylish way to create a warm and inviting atmosphere. With its bright and colorful LED lights, this kit can be used to add ambiance to any room, making it perfect for entertaining guests or simply enjoying a quiet evening at home.\n\nThe lights are easy to install and come with all the necessary hardware, ensuring a hassle-free experience. The remote control makes it simple to change the color and pattern of the lights to suit your mood or decor.\n\n## Key Features\n- **Easy to Install**: The Colorful Ambiance Light Kit comes with all the necessary hardware for a quick and easy installation.\n- **Bright and Colorful LED Lights**: The kit includes high-quality LED lights that provide bright and vibrant colors.\n- **Remote Control**: The remote control allows for easy operation of the lights, including changing colors and patterns.\n- **Variety of Colors and Patterns**: The Colorful Ambiance Light Kit offers a range of colors and patterns to choose from, allowing you to customize the look of your living room.\n- **Great for Entertaining or Creating a Cozy Atmosphere**: The kit is perfect for adding a touch of style and ambiance to your living room, making it an ideal gift for anyone who loves to entertain or create a cozy atmosphere in their home.\n\n## Technical Specifications\n| Specification | Detail |\n|--------------|---------|\n| Power Source  | AC Adapter |\n| Voltage      | 110-240V |\n| Frequency    | 50/60Hz |\n| Bulb Type    | LED |\n| Bulb Wattage | 5W |\n| Remote Range  | 10m |\n\n## What's in the Box\n- Colorful Ambiance Light Kit\n- AC Adapter\n- Remote Control\n- Installation Manual\n\n## Frequently Asked Questions\n**Q: What type of bulbs does the Colorful Ambiance Light Kit use?**\nA: The Colorful Ambiance Light Kit uses high-quality LED bulbs.\n\n**Q: Is the remote control rechargeable?**\nA: No, the remote",
             "media_url": "https://scontent.cdninstagram.com/o1/v/t16/f1/m86/7345941457FBCEEC76BBA19729EB6C8D_video_dashinit.mp4?stp=dst-mp4&efg=eyJxZV9ncm91cHMiOiJbXCJpZ193ZWJfZGVsaXZlcnlfdnRzX290ZlwiXSIsInZlbmNvZGVfdGFnIjoidnRzX3ZvZF91cmxnZW4uY2xpcHMuYzIuNTc2LmJhc2VsaW5lIn0&_nc_cat=111&vs=469334266253709_1508030372&_nc_vs=HBksFQIYUmlnX3hwdl9yZWVsc19wZXJtYW5lbnRfc3JfcHJvZC83MzQ1OTQxNDU3RkJDRUVDNzZCQkExOTcyOUVCNkM4RF92aWRlb19kYXNoaW5pdC5tcDQVAALIAQAVAhg6cGFzc3Rocm91Z2hfZXZlcnN0b3JlL0dLaklmQnQwencxY1ZTTURBRkZvbWxyS3BhcEpicV9FQUFBRhUCAsgBACgAGAAbABUAACaW1IClvuKzPxUCKAJDMywXQCQQ5WBBiTcYEmRhc2hfYmFzZWxpbmVfMV92MREAdf4HAA%3D%3D&ccb=9-4&oh=00_AYC_OU8SYNlEugwxOJHdcIipZolWoYzjEGZkaaVlr0YDvg&oe=671F7663&_nc_sid=10d13b",
             "media_type": "video",
-            "thumb": "https://scontent.cdninstagram.com/v/t51.29350-15/461272960_2287718244961095_6048631964334109642_n.jpg?stp=dst-jpg_e15&_nc_ht=scontent.cdninstagram.com&_nc_cat=103&_nc_ohc=jwI3NDylimkQ7kNvgFqJw1m&_nc_gid=8d40dba45b344c8ea69598d9a84fd499&edm=APs17CUBAAAA&ccb=7-5&oh=00_AYCbbJeFBOxIek4K_uKCzk3mp4qX3SE4-_FF-zdhZo1VgA&oe=67236F27&_nc_sid=10d13b"
+            "thumb": "https://file-examples.com/storage/fee7a7e285671bd4a9d4d9d/2017/04/file_example_MP4_480_1_5MG.mp4"
         }
     try:
         app.logger.info("Received a request to generate a description.")
