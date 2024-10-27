@@ -397,7 +397,12 @@ def generate_description():
     A: No, the light strip is not waterproof and should not be used in areas where it may come into contact with water.
     **Q: Can I control the color and brightness of the TV Enhancer Pro light strip?**
     A: The TV Enhancer"""
-        return jsonify({md})
+        return {
+            "description": md,
+            "media_url": "https://scontent.cdninstagram.com/o1/v/t16/f1/m86/7345941457FBCEEC76BBA19729EB6C8D_video_dashinit.mp4?stp=dst-mp4&efg=eyJxZV9ncm91cHMiOiJbXCJpZ193ZWJfZGVsaXZlcnlfdnRzX290ZlwiXSIsInZlbmNvZGVfdGFnIjoidnRzX3ZvZF91cmxnZW4uY2xpcHMuYzIuNTc2LmJhc2VsaW5lIn0&_nc_cat=111&vs=469334266253709_1508030372&_nc_vs=HBksFQIYUmlnX3hwdl9yZWVsc19wZXJtYW5lbnRfc3JfcHJvZC83MzQ1OTQxNDU3RkJDRUVDNzZCQkExOTcyOUVCNkM4RF92aWRlb19kYXNoaW5pdC5tcDQVAALIAQAVAhg6cGFzc3Rocm91Z2hfZXZlcnN0b3JlL0dLaklmQnQwencxY1ZTTURBRkZvbWxyS3BhcEpicV9FQUFBRhUCAsgBACgAGAAbABUAACaW1IClvuKzPxUCKAJDMywXQCQQ5WBBiTcYEmRhc2hfYmFzZWxpbmVfMV92MREAdf4HAA%3D%3D&ccb=9-4&oh=00_AYC_OU8SYNlEugwxOJHdcIipZolWoYzjEGZkaaVlr0YDvg&oe=671F7663&_nc_sid=10d13b",
+            "media_type": "video",
+            "thumb": "https://scontent.cdninstagram.com/v/t51.29350-15/461272960_2287718244961095_6048631964334109642_n.jpg?stp=dst-jpg_e15&_nc_ht=scontent.cdninstagram.com&_nc_cat=103&_nc_ohc=jwI3NDylimkQ7kNvgFqJw1m&_nc_gid=8d40dba45b344c8ea69598d9a84fd499&edm=APs17CUBAAAA&ccb=7-5&oh=00_AYCbbJeFBOxIek4K_uKCzk3mp4qX3SE4-_FF-zdhZo1VgA&oe=67236F27&_nc_sid=10d13b"
+        }
     try:
         app.logger.info("Received a request to generate a description.")
         
