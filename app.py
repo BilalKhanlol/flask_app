@@ -397,7 +397,7 @@ def generate_description():
     A: No, the light strip is not waterproof and should not be used in areas where it may come into contact with water.
     **Q: Can I control the color and brightness of the TV Enhancer Pro light strip?**
     A: The TV Enhancer"""
-        return jsonify(md), 200
+        return jsonify({md})
     try:
         app.logger.info("Received a request to generate a description.")
         
